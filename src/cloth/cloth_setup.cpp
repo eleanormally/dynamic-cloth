@@ -28,20 +28,22 @@ Cloth::Cloth(ArgParser* _args) {
   assert(token == "damping");
   // NOTE: correction factor == .1, means springs shouldn't stretch more than
   // 10%
-  //       correction factor == 100, means don't do any correction
+  //       correction factor == 100, means don't do ainitialY correction
   istr >> token >> provot_structural_correction;
   assert(token == "provot_structural_correction");
   istr >> token >> provot_shear_correction;
   assert(token == "provot_shear_correction");
 
   // the cloth dimensions
-  istr >> token >> nx >> ny;
+  istr >> token >> initialX >> initialY;
+  nx = initialX;
+  ny = initialY;
   assert(token == "m");
-  assert(nx >= 2 && ny >= 2);
+  assert(initialX >= 2 && initialY >= 2);
 
   // the corners of the cloth
   // (units == meters)
-  Vec3f a, b, c, d;
+  Vec3f  a, b, c, d;
   double x, y, z;
   istr >> token >> x >> y >> z;
   assert(token == "p");
@@ -65,21 +67,43 @@ Cloth::Cloth(ArgParser* _args) {
   double area = AreaOfTriangle(a, b, c) + AreaOfTriangle(a, c, d);
 
   // create the particles
-  particles = new ClothParticle[nx * ny];
-  double mass = area * fabric_weight / double(nx * ny);
-  for (int i = 0; i < nx; i++) {
-    double x = i / double(nx - 1);
-    Vec3f ab = float(1 - x) * a + float(x) * b;
-    Vec3f dc = float(1 - x) * d + float(x) * c;
-    for (int j = 0; j < ny; j++) {
-      double y = j / double(ny - 1);
-      ClothParticle& p = getParticle(i, j);
-      Vec3f abdc = float(1 - y) * ab + float(y) * dc;
-      p.setOriginalPosition(abdc);
-      p.setPosition(abdc);
-      p.setVelocity(Vec3f(0, 0, 0));
-      p.setMass(mass);
-      p.setFixed(false);
+  particles = vector<vector<ClothParticle>>(
+      initialX, vector<ClothParticle>(initialY, ClothParticle()));
+  double mass = area * fabric_weight / double(initialX * initialY);
+  for (int i = 0; i < initialX; i++) {
+    double x = i / double(initialX - 1);
+    Vec3f  ab = float(1 - x) * a + float(x) * b;
+    Vec3f  dc = float(1 - x) * d + float(x) * c;
+    for (int j = 0; j < initialY; j++) {
+      double y = j / double(initialY - 1);
+      particles[i][j] = ClothParticle();
+      ClothParticle& p = particles[i][j];
+      Vec3f          abdc = float(1 - y) * ab + float(y) * dc;
+      p.position = abdc;
+      p.velocity = Vec3f::zero();
+      p.mass = mass;
+      p.type = Particle::Active;
+    }
+  }
+
+  // create the springs
+  for (int i = 1; i < initialX - 1; i++) {
+    for (int j = 1; j < initialY - 1; j++) {
+      //structural
+      springs[PosPair(i, j, i + 1, j)] = k_structural;
+      springs[PosPair(i, j, i - 1, j)] = k_structural;
+      springs[PosPair(i, j, i, j + 1)] = k_structural;
+      springs[PosPair(i, j, i, j - 1)] = k_structural;
+      //shear
+      springs[PosPair(i, j, i + 1, j + 1)] = k_shear;
+      springs[PosPair(i, j, i + 1, j - 1)] = k_shear;
+      springs[PosPair(i, j, i - 1, j + 1)] = k_shear;
+      springs[PosPair(i, j, i - 1, j - 1)] = k_shear;
+      //bend
+      springs[PosPair(i, j, i + 2, j)] = k_bend;
+      springs[PosPair(i, j, i - 2, j)] = k_bend;
+      springs[PosPair(i, j, i, j + 2)] = k_bend;
+      springs[PosPair(i, j, i, j - 2)] = k_bend;
     }
   }
 
@@ -91,12 +115,12 @@ Cloth::Cloth(ArgParser* _args) {
   // the fixed particles
   while (istr >> token) {
     assert(token == "f");
-    int i, j;
+    int    i, j;
     double x, y, z;
     istr >> i >> j >> x >> y >> z;
-    ClothParticle& p = getParticle(i, j);
-    p.setPosition(Vec3f(x, y, z));
-    p.setFixed(true);
+    ClothParticle& p = particles[i][j];
+    p.position = Vec3f(x, y, z);
+    p.type = Particle::Fixed;
   }
 
   computeBoundingBox();
@@ -105,11 +129,13 @@ Cloth::Cloth(ArgParser* _args) {
 // ================================================================================
 
 void Cloth::computeBoundingBox() {
-  box = BoundingBox(getParticle(0, 0).getPosition());
-  for (int i = 0; i < nx; i++) {
-    for (int j = 0; j < ny; j++) {
-      box.Extend(getParticle(i, j).getPosition());
-      box.Extend(getParticle(i, j).getOriginalPosition());
+  // TODO: update for new data structure
+  box = BoundingBox(getParticle(0, 0).position);
+  for (int i = 0; i < initialX; i++) {
+    for (int j = 0; j < initialY; j++) {
+      if (hasParticle(i, j)) {
+        box.Extend(getParticle(i, j).position);
+      }
     }
   }
 }
