@@ -1,8 +1,8 @@
 #include <vector>
 
 #include "OpenGLCanvas.h"
-#include "meshdata.h"
-#include "argparser.h"
+#include "../meshdata.h"
+#include "../../args/argparser.h"
 #include "OpenGLCamera.h"
 #include "OpenGLRenderer.h"
 
@@ -226,15 +226,6 @@ void OpenGLCanvas::keyboardCB(GLFWwindow* /*window*/, int key, int /*scancode*/,
     case 'f':  case 'F': 
       mesh_data->force = !mesh_data->force;
       break; 
-    case 'e':  case 'E': 
-      mesh_data->face_velocity = (mesh_data->face_velocity+1)%4;
-      break; 
-    case 'd':  case 'D': 
-      mesh_data->dense_velocity = (mesh_data->dense_velocity+1)%4;
-      break; 
-    case 's':  case 'S': 
-      mesh_data->surface = !mesh_data->surface;
-      break; 
     case 'w':  case 'W':
       mesh_data->wireframe = !mesh_data->wireframe;
       break;
@@ -244,12 +235,6 @@ void OpenGLCanvas::keyboardCB(GLFWwindow* /*window*/, int key, int /*scancode*/,
     case 'b':  case 'B':
       mesh_data->bounding_box = !mesh_data->bounding_box;
       break;
-    case 'c':  case 'C': 
-      mesh_data->cubes = !mesh_data->cubes;
-      break; 
-    case 'p':  case 'P': 
-      mesh_data->pressure = !mesh_data->pressure;
-      break; 
     case 'r':  case 'R': 
       // reset system
       Load();

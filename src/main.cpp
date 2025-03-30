@@ -9,7 +9,7 @@ extern "C" {
 int NSApplicationMain(int argc, const char* argv[]);
 }
 #else
-#include "OpenGLRenderer.h"
+#include "render/opengl/OpenGLRenderer.h"
 #endif
 
 // The one significant global variable

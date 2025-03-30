@@ -45,7 +45,7 @@ typedef struct Pos {
 } Pos;
 using std::hash;
 template <>
-struct hash<Pos> {
+struct std::hash<Pos> {
   size_t operator()(const Pos& p) const {
     return hash<int>{}(p.x) ^ (hash<int>{}(p.y) << 1);
   }
@@ -61,7 +61,7 @@ typedef struct PosPair {
   }
 } PosPair;
 template <>
-struct hash<PosPair> {
+struct std::hash<PosPair> {
   //making sure that pospair hashes to the same value no matter the order
   size_t operator()(const PosPair& pp) const {
     return hash<Pos>{}(pp.a) ^ hash<Pos>{}(pp.b);
