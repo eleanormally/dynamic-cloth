@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{multicol}
+\usepackage[
+style=numeric,
+sorting=ynt,
+backend=bibtex
+]{biblatex}
+\addbibresource{bib.bib} %Imports bibliography file
+
+\title{Adaptive Subdivision of Mass-Spring Simulations}
+\author{Eleanor Olson, Kana Rudnick}
+\date{March 2025}
+
+\begin{document}
+
+\maketitle
+\begin{multicols}{2}
+\section*{Introduction}
+When simulating cloth with the commonly used mass-spring simulation techniques, a designer must choose how many masses to use. Even when using a simulator that will not cause issues at high density, choosing the sampling density is a difficult balancing game, trading off plausible simulation and performance. One way to ease this decision making is to automatically subdivide a low-resolution simulation depending on the progression of the simulation. This adaptive subdivision is what we will focus on in this project.
+\section*{Previous Research}
+Our goals of this project have been guided primarily by three papers. First, through research in class by Provot \cite{provot}, outlining the basic technique of simulating cloth as a mass spring system. This paper outlines basic systems around how to represent a cloth with tension and shear springs, as well as techniques to prevent unwanted artifacts of a mass spring system such as hyperextension of the springs. This paper is also of particular use to us as we have already implemented its outlined systems in previous work. We plan on adapting this to fit our new project.
+\medskip
+
+A supplementary paper which has given inspiration to our project is that of Kahler Et Al \cite{kahler}. The paper is focused on the rendering of triangular meshes that are undergoing real time deformation and movement. The utilize a lookup table based system that can effectively subdivide a mesh in regions where the deformation is significantly larger than that of the undeformed mesh. This system does not require recursion and has limited recomputation of surface curvature. This paper could serve as inspiration and guidance for how we will effectively render adaptively subdivided mesh without adding too much overhead.
+\medskip
+
+The primary paper used in outlining this project is that of Hutchinson Et Al \cite{hutchinson}, which describes a system to adaptively subdivide mass spring systems to optimize the output of their simulation. They describe an angle based system, which subdivides according to the angle between springs in the system. This is well suited as a metric for subdivision as areas with high angles are the most visibly quantized areas in the model. In addition to the subdivision scheme, we plan to implement the flattened data structure and simulations algorithms from this paper, as we cannot simply use the systems of previous uniform simulations \cite{provot}.
+\section*{Technical Outline}
+We plan to implement previously existing adaptive cloth subdivision systems \cite{hutchinson} to simulate cloth, but in addition we hope to advance our subdivision rules through modeling tension on faces. We plan to do this by creating "virtual angles" along the tension springs of the simulation, and applying angle based subdivision \cite{hutchinson} to these new virtual angles. We will do this by assuming that each spring is a catenary with a user defined flexibility, and model the center-point of a catenary between the two endpoints of each tension spring. Given this, we should be able to identify sections of a simulation that are under simulated both in "draping over" and "hanging from" cloth situations.
+\section*{Tests and Examples}
+For the first few weeks, we will be utilizing very basic mass spring examples, such as a various cloths composed of different materials, both vertically and horizontally hanging from two suspended points. These basic examples will serve to make sure that no errors occur in the transition of our previous mass spring system simulation to one involving more complicated integration schema and rewritten rendering code. 
+\\Once we begin the implementation of adaptive subdivisions in the mesh, we will have an additional set of test cases. The most straightforward one is a horizontal cloth with one fixed point in the center, much like if a cloth was draped over a stick. The points closer to the suspended point should become more subdivided than those at the edges due to the heightened complexity. This test case can then be expanded by moving the suspended point to different points on the mesh, rotating the mesh, and adding more suspended points. Examples of this are simulations resembling curtains or tablecloths. These can again be tested with different materials and force constants, such as gravity.
+\section*{Project Timeline}
+\subsection*{Week 1}
+In this week, we will be modifying our existing cloth simulation code to better suit our project, and mathematically define all of our subdivision rules outside of code. While we will be working together heavily, Eleanor will be responsible for the program adaption and Kana will be responsible for the subdivision rules. Modifying the cloth simulation will include changing the data structures to allow for dynamic subdivision, as well as switching the rendering to vulkan for easier cross-platform work. Defining the subdivision rules will entail understanding and defining what inputs each spring/face will have access to, how to compute virtual angles, what user inputs we will take as subdivision parameters, and how subdivision will occur.
+\subsection*{Week 2}
+Week 2 will be dedicated to implementing subdivision of a section in the simulation, writing out test cases and examples, and simulating cloth with implicit integration. Subdivision rules will not be implemented this week, but we will be able to manually select regions of the cloth to subdivide. Kana will be responsible for the implicit integration, Eleanor will be responsible for the subdivision, and we will jointly be responsible for test cases, each writing the test cases that more directly relate to our work during the week.
+\subsection*{Week 3}
+This week will be dedicated to implementing the subdivision rules from week 1, and beginning the presentation. Both of these projects are heavily cooperative, and as such will likely be joint responsibilities. This join nature of the responsibilities will continue from here until the project is complete.
+\subsection*{Week 4}
+In week 4 we will finalize our software, making sure our examples give expected results. In addition to this we will finalize our presentation and begin writing up the full paper.
+\subsection*{Week 5}
+This week will be entirely dedicated to finalizing the complete writeup. Naturally, this will be a joint effort, however we will each focus on writing the sections we were the primary contributors to throughout the past 4 weeks.
+\end{multicols}
+\newpage
+\printbibliography[title={References}]
+\end{document}
