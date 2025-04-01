@@ -1,55 +1,61 @@
 [
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/main.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/main.cpp",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/main.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/main.cpp",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/main.cpp",
   "output": "CMakeFiles/simulation.dir/main.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/args/argparser.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/args/argparser.cpp",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/args/argparser.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/args/argparser.cpp",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/args/argparser.cpp",
   "output": "CMakeFiles/simulation.dir/args/argparser.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/cloth/cloth.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth.cpp",
-  "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth.cpp",
-  "output": "CMakeFiles/simulation.dir/cloth/cloth.cpp.o"
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/cloth/cloth_setup.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_setup.cpp",
+  "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_setup.cpp",
+  "output": "CMakeFiles/simulation.dir/cloth/cloth_setup.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/cloth/cloth_render.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_render.cpp",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/cloth/cloth_simulate.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_simulate.cpp",
+  "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_simulate.cpp",
+  "output": "CMakeFiles/simulation.dir/cloth/cloth_simulate.cpp.o"
+},
+{
+  "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/cloth/cloth_render.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_render.cpp",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/cloth/cloth_render.cpp",
   "output": "CMakeFiles/simulation.dir/cloth/cloth_render.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/libs/utils.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/libs/utils.cpp",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/libs/utils.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/libs/utils.cpp",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/libs/utils.cpp",
   "output": "CMakeFiles/simulation.dir/libs/utils.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/render/meshdata.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/meshdata.cpp",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3  -std=c++17 -g -Wall -Wextra -O3 -o CMakeFiles/simulation.dir/render/meshdata.cpp.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/meshdata.cpp",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/meshdata.cpp",
   "output": "CMakeFiles/simulation.dir/render/meshdata.cpp.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalViewController.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalViewController.m",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3 -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalViewController.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalViewController.m",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalViewController.m",
   "output": "CMakeFiles/simulation.dir/render/metal/MetalViewController.m.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalRenderer.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalRenderer.m",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3 -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalRenderer.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalRenderer.m",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalRenderer.m",
   "output": "CMakeFiles/simulation.dir/render/metal/MetalRenderer.m.o"
 },
 {
   "directory": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/build",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalMTKView.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalMTKView.m",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -DDEBUG=1 -DTARGET_MACOS   -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk -mmacosx-version-min=15.3 -x objective-c -fmodules -o CMakeFiles/simulation.dir/render/metal/MetalMTKView.m.o -c /Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalMTKView.m",
   "file": "/Users/ellie/Documents/RPI/classes/acg/dynamic-cloth/src/render/metal/MetalMTKView.m",
   "output": "CMakeFiles/simulation.dir/render/metal/MetalMTKView.m.o"
 }

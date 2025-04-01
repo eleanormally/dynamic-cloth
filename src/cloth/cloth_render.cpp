@@ -1,5 +1,5 @@
+#include <cassert>
 #include <cstring>
-#include <fstream>
 #include "../args/argparser.h"
 #include "../libs/utils.h"
 #include "../render/meshdata.h"
@@ -141,6 +141,7 @@ void Cloth::PackClothSurface(float*& current) {
   //   d-----------------------c
   //
 
+  vector<vector<bool>> used(nx, vector<bool>(ny, false));
   // mesh surface positions & normals
   for (int i = 0; i < nx - 1; i++) {
     for (int j = 0; j < ny - 1; j++) {
@@ -148,9 +149,24 @@ void Cloth::PackClothSurface(float*& current) {
       if (p.type == Particle::None) {
         continue;
       }
-      int diagonal = 1;
-      while (getParticle(i + diagonal, j + diagonal).type == Particle::None) {
+      int  diagonal = 1;
+      bool shouldContinue = true;
+      while (true) {
+        if (i + diagonal >= nx || j + diagonal >= ny) {
+          shouldContinue = false;
+          break;
+        }
+        if (used[i][j] && used[i + diagonal][j + diagonal]) {
+          shouldContinue = false;
+          break;
+        }
+        if (getParticle(i + diagonal, j + diagonal).type != Particle::None) {
+          break;
+        }
         diagonal++;
+      }
+      if (!shouldContinue) {
+        continue;
       }
       const ClothParticle& endPoint = getParticle(i + diagonal, j + diagonal);
 
@@ -159,6 +175,21 @@ void Cloth::PackClothSurface(float*& current) {
 
       const ClothParticle& nextPoint = getParticle(i + diagonal, j);
       const ClothParticle& adjacentPoint = getParticle(i, j + diagonal);
+
+      //ISSUE:
+      //
+      // <space> = null, * = interpolated, o = active point
+      //_______
+      //|o o o|
+      //|     |
+      //|o*o o|
+      //|*o*  |
+      //|o*o o|
+      //------|
+      // In this situation interpolated points won't find their
+      // diagonal. We need a system to detect when moving out of
+      // a subdivided zone.
+      // cancel if going between tombstones points
 
       //if these are none particles, the cloth is not well formed
       assert(nextPoint.type != Particle::None);

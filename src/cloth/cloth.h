@@ -31,6 +31,14 @@ class ClothParticle {
   Vec3f    position;
   Vec3f    velocity;
   ClothParticle() : type(Particle::None) {}
+  static ClothParticle none() { return ClothParticle(); }
+  static ClothParticle interp(const ClothParticle& a, const ClothParticle& b) {
+    ClothParticle p;
+    p.type = Particle::Interp;
+    p.position = a.position + b.position;
+    p.position /= 2;
+    return p;
+  }
 };
 
 // =====================================================================================
