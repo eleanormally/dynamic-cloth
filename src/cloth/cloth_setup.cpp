@@ -97,20 +97,20 @@ Cloth::Cloth(ArgParser* _args) {
       int xIdx = i * 2;
       int yIdx = j * 2;
       //structural
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 1)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 1)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 1, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 1, 0)] = k_structural;
       //shear
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx + 1)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx - 1)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx + 1)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx - 1)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx + 1, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx - 1, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx + 1, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx - 1, 0)] = k_shear;
       //bend
-      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 2)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 2)] = k_bend;
+      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx, 0)] = k_bend;
+      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx, 0)] = k_bend;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 2, 0)] = k_bend;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 2, 0)] = k_bend;
     }
   }
 
@@ -129,15 +129,14 @@ Cloth::Cloth(ArgParser* _args) {
     p.position = Vec3f(x, y, z);
     p.type = Particle::Fixed;
   }
-  SubdivideAboutPoint(8,8);
+  SubdivideAboutPoint(8, 8);
   IncreaseClothDensity();
-  SubdivideAboutPoint(16,16);
-  SubdivideAboutPoint(0,0);
-  SubdivideAboutPoint(24,24);
-  SubdivideAboutPoint(24,16);
-  SubdivideAboutPoint(20,20);
-  SubdivideAboutPoint(20,20);
-
+  SubdivideAboutPoint(16, 16);
+  SubdivideAboutPoint(0, 0);
+  SubdivideAboutPoint(24, 24);
+  SubdivideAboutPoint(24, 16);
+  SubdivideAboutPoint(20, 20);
+  SubdivideAboutPoint(20, 20);
 
   //TEST
   computeBoundingBox();

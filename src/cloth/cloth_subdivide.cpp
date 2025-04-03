@@ -87,6 +87,52 @@ void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
   }
 }
 
+void Cloth::RegenerateSprings(int i, int j, int distance) {
+  using std::pair;
+  static const vector<pair<int, int>> structuralOffsets = {
+      {0, 1},
+      {0, -1},
+      {1, 0},
+      {-1, 0},
+  };
+  static const vector<pair<int, int>> shearOffsets = {
+      {1, 1},
+      {1, -1},
+      {-1, 1},
+      {-1, -1},
+  };
+  Pos origin(i, j);
+  int layer = particles[i][j].layer;
+  int springMultiplier = 1 << layer;
+  for (const pair<int, int> offset : structuralOffsets) {
+    Pos structuralPoint = origin;
+    structuralPoint.x += offset.first * distance;
+    structuralPoint.y += offset.second * distance;
+    if (structuralPoint.x >= 0 && structuralPoint.x < nx &&
+        structuralPoint.y >= 0 && structuralPoint.y < ny) {
+      springs[PosPair(origin, structuralPoint, layer)] =
+          k_structural * springMultiplier;
+    }
+
+    Pos bendPoint = origin;
+    bendPoint.x += offset.first * distance * 2;
+    bendPoint.y += offset.second * distance * 2;
+    if (bendPoint.x >= 0 && bendPoint.x < nx && bendPoint.y >= 0 &&
+        bendPoint.y < ny) {
+      springs[PosPair(origin, bendPoint, layer)] = k_bend * springMultiplier;
+    }
+  }
+  for (const pair<int, int> offset : shearOffsets) {
+    Pos shearPoint = origin;
+    shearPoint.x += offset.first * distance;
+    shearPoint.y += offset.second * distance;
+    if (shearPoint.x >= 0 && shearPoint.x < nx && shearPoint.y >= 0 &&
+        shearPoint.y < ny) {
+      springs[PosPair(origin, shearPoint, layer)] = k_shear * springMultiplier;
+    }
+  }
+}
+
 void Cloth::SubdivideAboutPoint(int i, int j) {
   ClothParticle& p = particles[i][j];
   assert(p.layer < maximumSubdivision);
@@ -115,4 +161,5 @@ void Cloth::SubdivideAboutPoint(int i, int j) {
   p.layer++;
   AddSubdividedParticles(i, j, distance);
   AddInterpolatedParticles(i, j, distance);
+  RegenerateSprings(i, j, distance);
 }
