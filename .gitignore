@@ -1,4 +1,5 @@
 build/***
 .DS_STORE
 .cache
+src/compile_commands.json
 
