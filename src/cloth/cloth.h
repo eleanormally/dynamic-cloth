@@ -31,6 +31,24 @@ class ClothParticle {
   Vec3f    position;
   Vec3f    velocity;
   ClothParticle() : type(Particle::None) {}
+  static ClothParticle none() { return ClothParticle(); }
+  static ClothParticle interp(const ClothParticle& a, const ClothParticle& b) {
+    ClothParticle p;
+    p.type = Particle::Interp;
+    p.position = Vec3f::interp(a.position, b.position);
+    p.velocity = Vec3f::interp(a.velocity, b.velocity);
+    p.mass = a.mass + b.mass / 2;
+    return p;
+  }
+  static ClothParticle interpActive(const ClothParticle& a,
+                                    const ClothParticle& b) {
+    ClothParticle p;
+    p.type = Particle::Active;
+    p.position = Vec3f::interp(a.position, b.position);
+    p.velocity = Vec3f::interp(a.velocity, b.velocity);
+    p.mass = a.mass + b.mass / 2;
+    return p;
+  }
 };
 
 // =====================================================================================
@@ -42,6 +60,10 @@ typedef struct Pos {
   int y;
   Pos(int _x, int _y) : x(_x), y(_y) {}
   bool operator==(const Pos& p) const { return x == p.x && y == p.y; }
+  void operator*=(const int m) {
+    x *= m;
+    y *= m;
+  }
 } Pos;
 using std::hash;
 template <>
@@ -54,21 +76,44 @@ struct std::hash<Pos> {
 typedef struct PosPair {
   Pos a;
   Pos b;
-  PosPair(Pos _a, Pos _b) : a(_a), b(_b) {}
-  PosPair(int x1, int y1, int x2, int y2) : a(Pos(x1, y1)), b(Pos(x2, y2)) {}
+  int layer;
+  PosPair(Pos _a, Pos _b, int _layer) : a(_a), b(_b), layer(_layer) {}
+  PosPair(int x1, int y1, int x2, int y2, int _layer)
+      : a(Pos(x1, y1)), b(Pos(x2, y2)), layer(_layer) {}
   bool operator==(const PosPair& pp) const {
-    return (pp.a == a && pp.b == b) || (pp.a == b && pp.b == a);
+    return layer == pp.layer &&
+           ((pp.a == a && pp.b == b) || (pp.a == b && pp.b == a));
+  }
+  void operator*=(int m) {
+    a.x *= m;
+    a.y *= m;
+    b.x *= m;
+    b.y *= m;
+  }
+  friend PosPair operator*(const PosPair& p, const int m) {
+    PosPair out = p;
+    out *= m;
+    return out;
   }
 } PosPair;
 template <>
 struct std::hash<PosPair> {
   //making sure that pospair hashes to the same value no matter the order
   size_t operator()(const PosPair& pp) const {
-    return hash<Pos>{}(pp.a) ^ hash<Pos>{}(pp.b);
+    return (hash<Pos>{}(pp.a) ^ hash<Pos>{}(pp.b) << 1) ^ hash<int>{}(pp.layer);
   }
 };
 
 class Cloth {
+ private:
+  void DebugPrintCloth() const;
+  void AdjustInterpolated();
+  void IncreaseClothDensity();
+
+  void SubdivideAboutPoint(int i, int j);
+  void AddSubdividedParticles(int i, int j, int distance);
+  void AddInterpolatedParticles(int i, int j, int distance);
+  void RegenerateSprings(int i, int j, int distance);
 
  public:
   Cloth(ArgParser* args);
@@ -92,7 +137,7 @@ class Cloth {
     return particles[i][j].type != Particle::None;
   }
 
-  Vec3f computeGouraudNormal(int i, int j) const;
+  Vec3f computeGouraudNormal(int i, int j, int distance) const;
 
   // HELPER FUNCTION
   void computeBoundingBox();

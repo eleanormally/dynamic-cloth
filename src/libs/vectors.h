@@ -5,9 +5,9 @@
 // originally implemented by Justin Legakis
 //
 
-#include "../render/meshdata.h"
 #include <cmath>
 #include <iostream>
+#include "../render/meshdata.h"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -21,7 +21,7 @@ class Matrix;
 
 class Vec3f {
 
-public:
+ public:
   // -----------------------------------------------
   // CONSTRUCTORS, ASSIGNMENT OPERATOR, & DESTRUCTOR
   Vec3f() { data[0] = data[1] = data[2] = 0; }
@@ -30,7 +30,7 @@ public:
     data[1] = v.data[1];
     data[2] = v.data[2];
   }
-  Vec3f(const Vec3f &V) {
+  Vec3f(const Vec3f& V) {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
@@ -40,13 +40,18 @@ public:
     data[1] = d1;
     data[2] = d2;
   }
-  const Vec3f &operator=(const Vec3f &V) {
+  const Vec3f& operator=(const Vec3f& V) {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
     return *this;
   }
   static Vec3f zero() { return Vec3f(0, 0, 0); }
+  static Vec3f interp(const Vec3f& a, const Vec3f& b) {
+    Vec3f out = a + b;
+    out /= 2;
+    return out;
+  }
 
   // ----------------------------
   // SIMPLE ACCESSORS & MODIFIERS
@@ -60,10 +65,10 @@ public:
   double r() const { return data[0]; }
   double g() const { return data[1]; }
   double b() const { return data[2]; }
-  void setx(double x) { data[0] = x; }
-  void sety(double y) { data[1] = y; }
-  void setz(double z) { data[2] = z; }
-  void set(double d0, double d1, double d2) {
+  void   setx(double x) { data[0] = x; }
+  void   sety(double y) { data[1] = y; }
+  void   setz(double z) { data[2] = z; }
+  void   set(double d0, double d1, double d2) {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
@@ -71,11 +76,11 @@ public:
 
   // ----------------
   // EQUALITY TESTING
-  int operator==(const Vec3f &V) {
+  int operator==(const Vec3f& V) {
     return ((data[0] == V.data[0]) && (data[1] == V.data[1]) &&
             (data[2] == V.data[2]));
   }
-  int operator!=(const Vec3f &V) {
+  int operator!=(const Vec3f& V) {
     return ((data[0] != V.data[0]) || (data[1] != V.data[1]) ||
             (data[2] != V.data[2]));
   }
@@ -97,11 +102,11 @@ public:
     data[1] *= d1;
     data[2] *= d2;
   }
-  void Negate() { Scale(-1.0); }
-  double Dot3(const Vec3f &V) const {
+  void   Negate() { Scale(-1.0); }
+  double Dot3(const Vec3f& V) const {
     return data[0] * V.data[0] + data[1] * V.data[1] + data[2] * V.data[2];
   }
-  static void Cross3(Vec3f &c, const Vec3f &v1, const Vec3f &v2) {
+  static void Cross3(Vec3f& c, const Vec3f& v1, const Vec3f& v2) {
     double x = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
     double y = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
     double z = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
@@ -112,69 +117,69 @@ public:
 
   // ---------------------
   // VECTOR MATH OPERATORS
-  Vec3f &operator+=(const Vec3f &V) {
+  Vec3f& operator+=(const Vec3f& V) {
     data[0] += V.data[0];
     data[1] += V.data[1];
     data[2] += V.data[2];
     return *this;
   }
-  Vec3f &operator-=(const Vec3f &V) {
+  Vec3f& operator-=(const Vec3f& V) {
     data[0] -= V.data[0];
     data[1] -= V.data[1];
     data[2] -= V.data[2];
     return *this;
   }
-  Vec3f &operator*=(double d) {
+  Vec3f& operator*=(double d) {
     data[0] *= d;
     data[1] *= d;
     data[2] *= d;
     return *this;
   }
-  Vec3f &operator/=(double d) {
+  Vec3f& operator/=(double d) {
     data[0] /= d;
     data[1] /= d;
     data[2] /= d;
     return *this;
   }
-  friend Vec3f operator+(const Vec3f &v1, const Vec3f &v2) {
+  friend Vec3f operator+(const Vec3f& v1, const Vec3f& v2) {
     Vec3f v3 = v1;
     v3 += v2;
     return v3;
   }
-  friend Vec3f operator-(const Vec3f &v1) {
+  friend Vec3f operator-(const Vec3f& v1) {
     Vec3f v2 = v1;
     v2.Negate();
     return v2;
   }
-  friend Vec3f operator-(const Vec3f &v1, const Vec3f &v2) {
+  friend Vec3f operator-(const Vec3f& v1, const Vec3f& v2) {
     Vec3f v3 = v1;
     v3 -= v2;
     return v3;
   }
-  friend Vec3f operator*(const Vec3f &v1, double d) {
+  friend Vec3f operator*(const Vec3f& v1, double d) {
     Vec3f v2 = v1;
     v2.Scale(d);
     return v2;
   }
-  friend Vec3f operator*(const Vec3f &v1, const Vec3f &v2) {
+  friend Vec3f operator*(const Vec3f& v1, const Vec3f& v2) {
     Vec3f v3 = v1;
     v3.Scale(v2.x(), v2.y(), v2.z());
     return v3;
   }
-  friend Vec3f operator*(double d, const Vec3f &v1) { return v1 * d; }
+  friend Vec3f operator*(double d, const Vec3f& v1) { return v1 * d; }
 
   // --------------
   // INPUT / OUTPUT
-  friend std::ostream &operator<<(std::ostream &ostr, const Vec3f &v) {
+  friend std::ostream& operator<<(std::ostream& ostr, const Vec3f& v) {
     ostr << v.data[0] << " " << v.data[1] << " " << v.data[2] << std::endl;
     return ostr;
   }
-  friend std::istream &operator>>(std::istream &istr, Vec3f &v) {
+  friend std::istream& operator>>(std::istream& istr, Vec3f& v) {
     istr >> v.data[0] >> v.data[1] >> v.data[2];
     return istr;
   }
 
-private:
+ private:
   friend class Matrix;
 
   // REPRESENTATION
@@ -186,10 +191,10 @@ private:
 
 class Vec4f {
 
-public:
+ public:
   // CONSTRUCTORS, ASSIGNMENT OPERATOR, & DESTRUCTOR
   Vec4f() { data[0] = data[1] = data[2] = data[3] = 0; }
-  Vec4f(const Vec4f &V) {
+  Vec4f(const Vec4f& V) {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
@@ -201,7 +206,7 @@ public:
     data[2] = d2;
     data[3] = d3;
   }
-  Vec4f &operator=(const Vec4f &V) {
+  Vec4f& operator=(const Vec4f& V) {
     data[0] = V.data[0];
     data[1] = V.data[1];
     data[2] = V.data[2];
@@ -222,11 +227,11 @@ public:
   double g() const { return data[1]; }
   double b() const { return data[2]; }
   double a() const { return data[3]; }
-  void setx(double x) { data[0] = x; }
-  void sety(double y) { data[1] = y; }
-  void setz(double z) { data[2] = z; }
-  void setw(double w) { data[3] = w; }
-  void set(double d0, double d1, double d2, double d3) {
+  void   setx(double x) { data[0] = x; }
+  void   sety(double y) { data[1] = y; }
+  void   setz(double z) { data[2] = z; }
+  void   setw(double w) { data[3] = w; }
+  void   set(double d0, double d1, double d2, double d3) {
     data[0] = d0;
     data[1] = d1;
     data[2] = d2;
@@ -235,11 +240,11 @@ public:
 
   // ----------------
   // EQUALITY TESTING
-  int operator==(const Vec4f &V) const {
+  int operator==(const Vec4f& V) const {
     return ((data[0] == V.data[0]) && (data[1] == V.data[1]) &&
             (data[2] == V.data[2]) && (data[3] == V.data[3]));
   }
-  int operator!=(const Vec4f &V) const {
+  int operator!=(const Vec4f& V) const {
     return ((data[0] != V.data[0]) || (data[1] != V.data[1]) ||
             (data[2] != V.data[2]) || (data[3] != V.data[3]));
   }
@@ -265,12 +270,12 @@ public:
     data[2] *= d2;
     data[3] *= d3;
   }
-  void Negate() { Scale(-1.0); }
-  double Dot4(const Vec4f &V) const {
+  void   Negate() { Scale(-1.0); }
+  double Dot4(const Vec4f& V) const {
     return data[0] * V.data[0] + data[1] * V.data[1] + data[2] * V.data[2] +
            data[3] * V.data[3];
   }
-  static void Cross3(Vec4f &c, const Vec4f &v1, const Vec4f &v2) {
+  static void Cross3(Vec4f& c, const Vec4f& v1, const Vec4f& v2) {
     double x = v1.data[1] * v2.data[2] - v1.data[2] * v2.data[1];
     double y = v1.data[2] * v2.data[0] - v1.data[0] * v2.data[2];
     double z = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
@@ -292,28 +297,28 @@ public:
 
   // ---------------------
   // VECTOR MATH OPERATORS
-  Vec4f &operator+=(const Vec4f &V) {
+  Vec4f& operator+=(const Vec4f& V) {
     data[0] += V.data[0];
     data[1] += V.data[1];
     data[2] += V.data[2];
     data[3] += V.data[3];
     return *this;
   }
-  Vec4f &operator-=(const Vec4f &V) {
+  Vec4f& operator-=(const Vec4f& V) {
     data[0] -= V.data[0];
     data[1] -= V.data[1];
     data[2] -= V.data[2];
     data[3] -= V.data[3];
     return *this;
   }
-  Vec4f &operator*=(double d) {
+  Vec4f& operator*=(double d) {
     data[0] *= d;
     data[1] *= d;
     data[2] *= d;
     data[3] *= d;
     return *this;
   }
-  Vec4f &operator/=(double d) {
+  Vec4f& operator/=(double d) {
     data[0] /= d;
     data[1] /= d;
     data[2] /= d;
@@ -323,17 +328,17 @@ public:
 
   // --------------
   // INPUT / OUTPUT
-  friend std::ostream &operator<<(std::ostream &ostr, const Vec4f &v) {
+  friend std::ostream& operator<<(std::ostream& ostr, const Vec4f& v) {
     ostr << v.data[0] << " " << v.data[1] << " " << v.data[2] << " "
          << v.data[3] << std::endl;
     return ostr;
   }
-  friend std::istream &operator>>(std::istream &istr, Vec4f &v) {
+  friend std::istream& operator>>(std::istream& istr, Vec4f& v) {
     istr >> v.data[0] >> v.data[1] >> v.data[2] >> v.data[3];
     return istr;
   }
 
-private:
+ private:
   friend class Matrix;
 
   // REPRESENTATION

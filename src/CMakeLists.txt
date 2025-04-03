@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 project (DynCloth)
 
 ##########################################################################
@@ -109,6 +109,7 @@ set (SRCS
   ${PROJECT_SOURCE_DIR}/args/argparser.cpp
   ${PROJECT_SOURCE_DIR}/cloth/cloth_setup.cpp
   ${PROJECT_SOURCE_DIR}/cloth/cloth_simulate.cpp
+  ${PROJECT_SOURCE_DIR}/cloth/cloth_subdivide.cpp
   ${PROJECT_SOURCE_DIR}/cloth/cloth_render.cpp
   ${PROJECT_SOURCE_DIR}/libs/utils.cpp
   ${PROJECT_SOURCE_DIR}/render/meshdata.cpp

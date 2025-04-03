@@ -1,5 +1,5 @@
+#include <cassert>
 #include <cstring>
-#include <fstream>
 #include "../args/argparser.h"
 #include "../libs/utils.h"
 #include "../render/meshdata.h"
@@ -148,9 +148,20 @@ void Cloth::PackClothSurface(float*& current) {
       if (p.type == Particle::None) {
         continue;
       }
-      int diagonal = 1;
-      while (getParticle(i + diagonal, j + diagonal).type == Particle::None) {
+      int  diagonal = 1;
+      bool shouldUse = true;
+      while (true) {
+        if (i + diagonal >= nx || j + diagonal >= ny) {
+          shouldUse = false;
+          break;
+        }
+        if (getParticle(i + diagonal, j + diagonal).type != Particle::None) {
+          break;
+        }
         diagonal++;
+      }
+      if (!shouldUse) {
+        continue;
       }
       const ClothParticle& endPoint = getParticle(i + diagonal, j + diagonal);
 
@@ -160,19 +171,21 @@ void Cloth::PackClothSurface(float*& current) {
       const ClothParticle& nextPoint = getParticle(i + diagonal, j);
       const ClothParticle& adjacentPoint = getParticle(i, j + diagonal);
 
-      //if these are none particles, the cloth is not well formed
-      assert(nextPoint.type != Particle::None);
-      assert(adjacentPoint.type != Particle::None);
+      if (nextPoint.type == Particle::None ||
+          adjacentPoint.type == Particle::None) {
+        continue;
+      }
 
       const Vec3f d_pos = nextPoint.position;
       const Vec3f b_pos = adjacentPoint.position;
 
       Vec3f x_pos = (a_pos + b_pos + c_pos + d_pos) * 0.25f;
 
-      Vec3f a_normal = computeGouraudNormal(i, j);
-      Vec3f b_normal = computeGouraudNormal(i, j + 1);
-      Vec3f c_normal = computeGouraudNormal(i + 1, j + 1);
-      Vec3f d_normal = computeGouraudNormal(i + 1, j);
+      Vec3f a_normal = computeGouraudNormal(i, j, diagonal);
+      Vec3f b_normal = computeGouraudNormal(i, j + diagonal, diagonal);
+      Vec3f c_normal =
+          computeGouraudNormal(i + diagonal, j + diagonal, diagonal);
+      Vec3f d_normal = computeGouraudNormal(i + diagonal, j, diagonal);
       if (!mesh_data->gouraud) {
         // compute normals at each corner and average them
         Vec3f top = b_pos - a_pos;
@@ -204,6 +217,7 @@ void Cloth::PackClothSurface(float*& current) {
       AddWireFrameTriangle(current, d_pos, a_pos, x_pos, d_normal, a_normal,
                            x_normal, Vec3f::zero(), Vec3f::zero(),
                            Vec3f::zero());
+      j += diagonal - 1;
     }
   }
 }
@@ -229,7 +243,7 @@ void Cloth::PackClothVelocities(float*& current) {
 // a helper functions
 // ================================================================================
 
-Vec3f Cloth::computeGouraudNormal(int i, int j) const {
+Vec3f Cloth::computeGouraudNormal(int i, int j, int distance) const {
   assert(i >= 0 && i < nx && j >= 0 && j < ny);
 
   Vec3f pos = getParticle(i, j).position;
@@ -238,14 +252,26 @@ Vec3f Cloth::computeGouraudNormal(int i, int j) const {
   Vec3f east = pos;
   Vec3f west = pos;
 
-  if (i - 1 >= 0)
-    north = getParticle(i - 1, j).position;
-  if (i + 1 < nx)
-    south = getParticle(i + 1, j).position;
-  if (j - 1 >= 0)
-    east = getParticle(i, j - 1).position;
-  if (j + 1 < ny)
-    west = getParticle(i, j + 1).position;
+  if (i - distance >= 0) {
+    if (getParticle(i - distance, j).type != Particle::None) {
+      north = getParticle(i - distance, j).position;
+    }
+  }
+  if (i + distance < nx) {
+    if (getParticle(i + distance, j).type != Particle::None) {
+      south = getParticle(i + distance, j).position;
+    }
+  }
+  if (j - distance >= 0) {
+    if (getParticle(i, j - distance).type != Particle::None) {
+      east = getParticle(i, j - distance).position;
+    }
+  }
+  if (j + distance < ny) {
+    if (getParticle(i, j + distance).type != Particle::None) {
+      west = getParticle(i, j + distance).position;
+    }
+  }
 
   Vec3f vns = north - south;
   Vec3f vwe = west - east;
@@ -260,3 +286,26 @@ Vec3f Cloth::computeGouraudNormal(int i, int j) const {
 }
 
 // ================================================================================
+
+void Cloth::DebugPrintCloth() const {
+  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
+      switch (particles[i][j].type) {
+        case Particle::Fixed:
+          std::cout << "F" << particles[i][j].layer;
+          break;
+        case Particle::Active:
+          std::cout << "A" << particles[i][j].layer;
+          break;
+        case Particle::None:
+          std::cout << "  ";
+          break;
+        case Particle::Interp:
+          std::cout << "I ";
+          break;
+      }
+      std::cout << " ";
+    }
+    std::cout << std::endl;
+  }
+}
