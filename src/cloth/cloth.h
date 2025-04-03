@@ -35,8 +35,18 @@ class ClothParticle {
   static ClothParticle interp(const ClothParticle& a, const ClothParticle& b) {
     ClothParticle p;
     p.type = Particle::Interp;
-    p.position = a.position + b.position;
-    p.position /= 2;
+    p.position = Vec3f::interp(a.position, b.position);
+    p.velocity = Vec3f::interp(a.velocity, b.velocity);
+    p.mass = a.mass + b.mass / 2;
+    return p;
+  }
+  static ClothParticle interpActive(const ClothParticle& a,
+                                    const ClothParticle& b) {
+    ClothParticle p;
+    p.type = Particle::Active;
+    p.position = Vec3f::interp(a.position, b.position);
+    p.velocity = Vec3f::interp(a.velocity, b.velocity);
+    p.mass = a.mass + b.mass / 2;
     return p;
   }
 };
@@ -67,6 +77,17 @@ typedef struct PosPair {
   bool operator==(const PosPair& pp) const {
     return (pp.a == a && pp.b == b) || (pp.a == b && pp.b == a);
   }
+  void operator*=(int m) {
+    a.x *= m;
+    a.y *= m;
+    b.x *= m;
+    b.y *= m;
+  }
+  friend PosPair operator*(const PosPair& p, const int m) {
+    PosPair out = p;
+    out *= m;
+    return out;
+  }
 } PosPair;
 template <>
 struct std::hash<PosPair> {
@@ -77,6 +98,14 @@ struct std::hash<PosPair> {
 };
 
 class Cloth {
+ private:
+  void DebugPrintCloth() const;
+  void AdjustInterpolated();
+  void IncreaseClothDensity();
+
+  void SubdivideAboutPoint(int i, int j);
+  void AddSubdividedParticles(int i, int j, int distance);
+  void AddInterpolatedParticles(int i, int j, int distance);
 
  public:
   Cloth(ArgParser* args);
@@ -100,7 +129,7 @@ class Cloth {
     return particles[i][j].type != Particle::None;
   }
 
-  Vec3f computeGouraudNormal(int i, int j) const;
+  Vec3f computeGouraudNormal(int i, int j, int distance) const;
 
   // HELPER FUNCTION
   void computeBoundingBox();

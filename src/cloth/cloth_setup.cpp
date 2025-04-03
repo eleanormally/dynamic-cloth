@@ -129,17 +129,17 @@ Cloth::Cloth(ArgParser* _args) {
     p.position = Vec3f(x, y, z);
     p.type = Particle::Fixed;
   }
+  SubdivideAboutPoint(8,8);
+  IncreaseClothDensity();
+  SubdivideAboutPoint(16,16);
+  SubdivideAboutPoint(0,0);
+  SubdivideAboutPoint(24,24);
+  SubdivideAboutPoint(24,16);
+  SubdivideAboutPoint(20,20);
+  SubdivideAboutPoint(20,20);
 
-  //testing
-  ClothParticle& p = particles[1][1];
-  p.type = Particle::Active;
-  p.position = particles[0][0].position + particles[2][2].position;
-  p.position /= 2;
-  particles[0][1] = ClothParticle::interp(particles[0][0], particles[0][2]);
-  particles[1][0] = ClothParticle::interp(particles[0][0], particles[2][0]);
-  particles[1][2] = ClothParticle::interp(particles[0][2], particles[2][2]);
-  particles[2][1] = ClothParticle::interp(particles[2][0], particles[2][2]);
 
+  //TEST
   computeBoundingBox();
 }
 
