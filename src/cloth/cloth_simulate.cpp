@@ -83,10 +83,16 @@ void Cloth::updateForces(int t, vector<vector<Vec3f>>& forces) {
       if (!shouldSimulate(t, p)) {
         continue;
       }
-      forces[i][j] = GLOBAL_args->mesh_data->gravity;
+      forces[i][j] = Vec3f::zero();
       forces[i][j] += reduceForceOverOffsets(i, j, structuralOffsets);
       forces[i][j] += reduceForceOverOffsets(i, j, shearOffsets);
       forces[i][j] += reduceForceOverOffsets(i, j, bendOffsets);
+      Vec3f gForce = Vec3f(GLOBAL_args->mesh_data->gravity);
+      gForce *= p.mass;
+      forces[i][j] += gForce;
+      Vec3f dampingForce = damping * p.velocity;
+      forces[i][j] -= dampingForce;
+      forces[i][j] /= p.mass;
     }
   }
 }
@@ -163,12 +169,6 @@ void Cloth::performTimestepSimulation(int t) {
   }
 
   updateForces(t, forces);
-  for (int i = 0; i < nx; i++) {
-    for (int j = 0; j < ny; j++) {
-      std::cout << forces[i][j] << ", ";
-    }
-    std::cout << std::endl;
-  }
   updateVelocities(t, forces);
   updatePositions();
   correctPositions();

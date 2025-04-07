@@ -157,14 +157,14 @@ Cloth::Cloth(ArgParser* _args) {
     p.originalPosition = p.position;
     p.type = Particle::Fixed;
   }
-  /*SubdivideAboutPoint(8, 8);*/
-  /*IncreaseClothDensity();*/
-  /*SubdivideAboutPoint(16, 16);*/
-  /*SubdivideAboutPoint(0, 0);*/
-  /*SubdivideAboutPoint(24, 24);*/
-  /*SubdivideAboutPoint(24, 16);*/
-  /*SubdivideAboutPoint(20, 20);*/
-  /*SubdivideAboutPoint(20, 20);*/
+  SubdivideAboutPoint(8, 8);
+  IncreaseClothDensity();
+  SubdivideAboutPoint(16, 16);
+  SubdivideAboutPoint(0, 0);
+  SubdivideAboutPoint(24, 24);
+  SubdivideAboutPoint(24, 16);
+  SubdivideAboutPoint(20, 20);
+  SubdivideAboutPoint(20, 20);
 
   //TEST
   computeBoundingBox();
