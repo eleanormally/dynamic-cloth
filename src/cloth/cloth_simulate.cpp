@@ -6,7 +6,7 @@ void Cloth::AdjustInterpolated() {
       if (p.type != Particle::Interp) {
         continue;
       }
-      int distance = 1 << (maximumSubdivision - p.layer - 1);
+      int distance = 1 << (maximumSubdivision - p.layer);
       assert(distance >= 0);  //should never be interpolating across base layer
       bool rowInterp = i % distance == distance / 2;
       int  iDelta = 0;
@@ -130,8 +130,9 @@ void Cloth::correctPositions() {
   for (const auto& pair : springs) {
     ClothParticle& a = particles[pair.first.a.x][pair.first.a.y];
     ClothParticle& b = particles[pair.first.b.x][pair.first.b.y];
-    assert(a.type != Particle::None);
-    assert(b.type != Particle::None);
+    if (a.type == Particle::None || b.type == Particle::None) {
+      continue;
+    }
 
     const Vec3f distance = a.position - b.position;
     const Vec3f originalDistance = a.originalPosition - b.originalPosition;

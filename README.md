@@ -6,7 +6,7 @@ To buid DynCloth, make sure that you have CMake 3.10 or newer installed.
 
 - navigate to `dynamic-cloth/build`
 - run `cmake ../src`
-- run `build`
+- run `make`
 - MacOS
     - run `./render.app/Contents/MacOS/render --cloth ../inputs/[filename]`
 - Other

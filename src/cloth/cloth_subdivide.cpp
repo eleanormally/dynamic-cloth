@@ -162,4 +162,12 @@ void Cloth::SubdivideAboutPoint(int i, int j) {
   AddSubdividedParticles(i, j, distance);
   AddInterpolatedParticles(i, j, distance);
   RegenerateSprings(i, j, distance);
+  for (const pair<int, int> offset : offsets) {
+    const int xIdx = i + (distance * offset.first);
+    const int yIdx = j + (distance * offset.second);
+    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+      continue;
+    }
+    RegenerateSprings(xIdx, yIdx, distance);
+  }
 }
