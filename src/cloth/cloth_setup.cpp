@@ -29,10 +29,8 @@ Cloth::Cloth(ArgParser* _args) {
   // NOTE: correction factor == .1, means springs shouldn't stretch more than
   // 10%
   //       correction factor == 100, means don't do ainitialY correction
-  istr >> token >> provot_structural_correction;
-  assert(token == "provot_structural_correction");
-  istr >> token >> provot_shear_correction;
-  assert(token == "provot_shear_correction");
+  istr >> token >> correction;
+  assert(token == "correction");
 
   // the cloth dimensions
   istr >> token >> initialX >> initialY;
@@ -85,6 +83,7 @@ Cloth::Cloth(ArgParser* _args) {
       ClothParticle& p = particles[i * 2][j * 2];
       Vec3f          abdc = float(1 - y) * ab + float(y) * dc;
       p.position = abdc;
+      p.originalPosition = abdc;
       p.velocity = Vec3f::zero();
       p.mass = mass;
       p.type = Particle::Active;
@@ -97,22 +96,50 @@ Cloth::Cloth(ArgParser* _args) {
       int xIdx = i * 2;
       int yIdx = j * 2;
       //structural
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 1, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 1, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 2, 0)] = k_structural;
+      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 2, 0)] = k_structural;
       //shear
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx + 1, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx + 1, yIdx - 1, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx + 1, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 1, yIdx - 1, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx + 2, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx - 2, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx + 2, 0)] = k_shear;
+      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx - 2, 0)] = k_shear;
       //bend
-      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx, 0)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx, 0)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 2, 0)] = k_bend;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 2, 0)] = k_bend;
+      if (xIdx >= 4) {
+        springs[PosPair(xIdx, yIdx, xIdx - 4, yIdx, 0)] = k_bend;
+      }
+      if (xIdx + 4 < nx) {
+        springs[PosPair(xIdx, yIdx, xIdx + 4, yIdx, 0)] = k_bend;
+      }
+      if (yIdx >= 4) {
+        springs[PosPair(xIdx, yIdx, xIdx, yIdx - 4, 0)] = k_bend;
+      }
+      if (yIdx + 4 < ny) {
+        springs[PosPair(xIdx, yIdx, xIdx, yIdx + 4, 0)] = k_bend;
+      }
     }
   }
+  for (int i = 1; i < initialX; i++) {
+    springs[PosPair(i * 2, 0, i * 2 - 2, 0, 0)] = k_structural;
+    springs[PosPair(i * 2, ny - 1, i * 2 - 2, ny - 1, 0)] = k_structural;
+    if (i > 1) {
+      springs[PosPair(i * 2, 0, i * 2 - 4, 0, 0)] = k_bend;
+      springs[PosPair(i * 2, ny - 1, i * 2 - 4, ny - 1, 0)] = k_bend;
+    }
+  }
+  for (int i = 1; i < initialY; i++) {
+    springs[PosPair(0, i * 2, 0, i * 2 - 2, 0)] = k_structural;
+    springs[PosPair(nx - 1, i * 2, nx - 1, i * 2 - 2, 0)] = k_structural;
+    if (i > 1) {
+      springs[PosPair(0, i * 2, 0, i * 2 - 4, 0)] = k_bend;
+      springs[PosPair(nx - 1, i * 2, nx - 1, i * 2 - 4, 0)] = k_bend;
+    }
+  }
+  springs[PosPair(0, 2, 2, 0, 0)] = k_shear;
+  springs[PosPair(nx - 3, ny - 1, nx - 1, ny - 3, 0)] = k_shear;
+  springs[PosPair(nx - 3, 0, nx - 1, 2, 0)] = k_shear;
+  springs[PosPair(0, ny - 3, 2, ny - 1, 0)] = k_shear;
 
   // parse timestep
   istr >> token >> mesh_data->timestep;
@@ -127,16 +154,17 @@ Cloth::Cloth(ArgParser* _args) {
     istr >> i >> j >> x >> y >> z;
     ClothParticle& p = particles[i * 2][j * 2];
     p.position = Vec3f(x, y, z);
+    p.originalPosition = p.position;
     p.type = Particle::Fixed;
   }
-  SubdivideAboutPoint(8, 8);
-  IncreaseClothDensity();
-  SubdivideAboutPoint(16, 16);
-  SubdivideAboutPoint(0, 0);
-  SubdivideAboutPoint(24, 24);
-  SubdivideAboutPoint(24, 16);
-  SubdivideAboutPoint(20, 20);
-  SubdivideAboutPoint(20, 20);
+  /*SubdivideAboutPoint(8, 8);*/
+  /*IncreaseClothDensity();*/
+  /*SubdivideAboutPoint(16, 16);*/
+  /*SubdivideAboutPoint(0, 0);*/
+  /*SubdivideAboutPoint(24, 24);*/
+  /*SubdivideAboutPoint(24, 16);*/
+  /*SubdivideAboutPoint(20, 20);*/
+  /*SubdivideAboutPoint(20, 20);*/
 
   //TEST
   computeBoundingBox();

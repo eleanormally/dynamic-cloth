@@ -3,8 +3,7 @@ k_shear 0.1
 k_bend 0.001
 damping 0.01
 
-provot_structural_correction 0.1
-provot_shear_correction 100
+correction 0.1
 
 m 22 16
 

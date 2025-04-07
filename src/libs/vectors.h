@@ -171,7 +171,7 @@ class Vec3f {
   // --------------
   // INPUT / OUTPUT
   friend std::ostream& operator<<(std::ostream& ostr, const Vec3f& v) {
-    ostr << v.data[0] << " " << v.data[1] << " " << v.data[2] << std::endl;
+    ostr << v.data[0] << " " << v.data[1] << " " << v.data[2];
     return ostr;
   }
   friend std::istream& operator>>(std::istream& istr, Vec3f& v) {
