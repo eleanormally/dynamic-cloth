@@ -2,12 +2,12 @@
 #define _CLOTH_H_
 
 #include <optional>
-#include <unordered_map>
 #include <vector>
 
 #include "../args/argparser.h"
 #include "../libs/boundingbox.h"
 #include "../libs/vectors.h"
+#include "offsets.h"
 
 // =====================================================================================
 // Cloth Particles
@@ -62,8 +62,6 @@ class ClothParticle {
 // =====================================================================================
 class Cloth {
  private:
-  typedef std::pair<int, int> Offset;
-
   void DebugPrintCloth() const;
   void AdjustInterpolated();
   void IncreaseClothDensity();
@@ -77,8 +75,16 @@ class Cloth {
   void  updateVelocities(int t, const vector<vector<Vec3f>>& forces);
   void  updatePositions();
   void  correctPositions();
-  Vec3f reduceForceOverOffsets(int i, int j, const vector<Offset>& offsets,
+  void  correctParticle(int i, int j, const Offset::Vec& offsets, double k);
+  Vec3f reduceForceOverOffsets(int i, int j, const Offset::Vec& offsets,
                                double k) const;
+
+  inline int scale(int layer) const {
+    return 1 << (maximumSubdivision - layer);
+  }
+  inline bool inBounds(int i, int j) const {
+    return i >= 0 && i < nx && j >= 0 && j < ny;
+  }
 
  public:
   Cloth(ArgParser* args);

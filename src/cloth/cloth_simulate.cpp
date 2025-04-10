@@ -1,4 +1,5 @@
 #include "cloth.h"
+
 void Cloth::AdjustInterpolated() {
   for (int i = 0; i < nx; i++) {
     for (int j = 0; j < ny; j++) {
@@ -6,7 +7,7 @@ void Cloth::AdjustInterpolated() {
       if (p.type != Particle::Interp) {
         continue;
       }
-      int  distance = 1 << (maximumSubdivision - p.layer);
+      int  distance = scale(p.layer);
       bool rowInterp = i % distance == distance / 2;
       int  iDelta = 0;
       int  jDelta = 0;
@@ -36,18 +37,18 @@ Vec3f forceToPoint(double k, const ClothParticle& source,
   const Vec3f total = k * (length - dist);
   return total;
 }
-Vec3f Cloth::reduceForceOverOffsets(int i, int j, const vector<Offset>& offsets,
+Vec3f Cloth::reduceForceOverOffsets(int i, int j, const Offset::Vec& offsets,
                                     double k) const {
   Vec3f                force = Vec3f::zero();
   const ClothParticle& p = getParticle(i, j);
 
-  const int distance = 1 << (maximumSubdivision - p.layer);
+  const int distance = scale(p.layer);
   const int forceMultiplier = 1 << p.layer;
 
-  for (const Offset& offset : offsets) {
+  for (const Offset::Offset& offset : offsets) {
     int iOffset = i + offset.first * distance;
     int jOffset = j + offset.second * distance;
-    if (iOffset < 0 || jOffset < 0 || iOffset >= nx || jOffset >= ny) {
+    if (!inBounds(iOffset, jOffset)) {
       continue;
     }
     const ClothParticle& adj = getParticle(iOffset, jOffset);
@@ -61,24 +62,6 @@ Vec3f Cloth::reduceForceOverOffsets(int i, int j, const vector<Offset>& offsets,
 
 void Cloth::updateForces(int t, vector<vector<Vec3f>>& forces) {
   using std::pair;
-  const static vector<Offset> structuralOffsets = {
-      {0, 1},
-      {0, -1},
-      {1, 0},
-      {-1, 0},
-  };
-  const static vector<Offset> bendOffsets = {
-      {0, 2},
-      {0, -2},
-      {2, 0},
-      {-2, 0},
-  };
-  const static vector<Offset> shearOffsets = {
-      {1, 1},
-      {1, -1},
-      {-1, 1},
-      {-1, -1},
-  };
   for (int i = 0; i < nx; i++) {
     for (int j = 0; j < ny; j++) {
       const ClothParticle& p = getParticle(i, j);
@@ -87,9 +70,9 @@ void Cloth::updateForces(int t, vector<vector<Vec3f>>& forces) {
       }
       forces[i][j] = Vec3f::zero();
       forces[i][j] +=
-          reduceForceOverOffsets(i, j, structuralOffsets, k_structural);
-      forces[i][j] += reduceForceOverOffsets(i, j, shearOffsets, k_shear);
-      forces[i][j] += reduceForceOverOffsets(i, j, bendOffsets, k_bend);
+          reduceForceOverOffsets(i, j, Offset::Structural, k_structural);
+      forces[i][j] += reduceForceOverOffsets(i, j, Offset::Shear, k_shear);
+      forces[i][j] += reduceForceOverOffsets(i, j, Offset::Bend, k_bend);
       Vec3f gForce = Vec3f(GLOBAL_args->mesh_data->gravity);
       gForce *= p.mass;
       forces[i][j] += gForce;
@@ -108,8 +91,8 @@ void Cloth::updateVelocities(int t, const vector<vector<Vec3f>>& forces) {
         continue;
       }
       double timestep = GLOBAL_args->mesh_data->timestep;
-      timestep /= (double)(1 << maximumSubdivision);
-      timestep *= (double)(1 << (maximumSubdivision - p.layer));
+      timestep /= (double)scale(0);
+      timestep *= (double)scale(p.layer);
       p.velocity += forces[i][j] * timestep;
     }
   }
@@ -121,49 +104,63 @@ void Cloth::updatePositions() {
       ClothParticle& p = particles[i][j];
       if (p.type == Particle::Active) {
         double timestep = GLOBAL_args->mesh_data->timestep;
-        timestep /= (double)(1 << maximumSubdivision);
-        timestep *= (double)(1 << (maximumSubdivision - p.layer));
+        timestep /= (double)scale(0);
+        timestep *= (double)scale(p.layer);
         p.position += p.velocity * timestep;
       }
     }
   }
 }
 
+void Cloth::correctParticle(int i, int j, const Offset::Vec& offsets,
+                            double k) {
+  ClothParticle& p = particles[i][j];
+  const int      distance = scale(p.layer);
+
+  for (const Offset::Offset offset : offsets) {
+    int iIdx = i + offset.first * distance;
+    int jIdx = j + offset.second * distance;
+    if (!inBounds(iIdx, jIdx)) {
+      continue;
+    }
+
+    ClothParticle& adjacent = particles[iIdx][jIdx];
+    if (adjacent.type == Particle::None) {
+      continue;
+    }
+
+    const Vec3f distance = p.position - adjacent.position;
+    const Vec3f original = p.originalPosition - adjacent.originalPosition;
+
+    double stretchRatio = distance.Length() / original.Length();
+    if (stretchRatio - 1.0 > k) {
+      const double moveRatio = 1 - ((k + 1) / stretchRatio);
+      Vec3f        moveVector = distance;
+
+      moveVector *= moveRatio;
+
+      if (adjacent.type == Particle::Active) {
+        moveVector /= 2;
+        p.position -= moveVector;
+        adjacent.position += moveVector;
+      } else {
+        p.position -= moveVector;
+      }
+    }
+  }
+}
+
 void Cloth::correctPositions() {
-  /*for (const auto& pair : springs) {*/
-  /*  ClothParticle& a = particles[pair.first.a.x][pair.first.a.y];*/
-  /*  ClothParticle& b = particles[pair.first.b.x][pair.first.b.y];*/
-  /*  if (a.type == Particle::None || b.type == Particle::None) {*/
-  /*    continue;*/
-  /*  }*/
-  /**/
-  /*  const Vec3f distance = a.position - b.position;*/
-  /*  const Vec3f originalDistance = a.originalPosition - b.originalPosition;*/
-  /**/
-  /*  double stretchRatio = distance.Length() / originalDistance.Length();*/
-  /*  if (stretchRatio - 1.0 < correction) {*/
-  /*    continue;*/
-  /*  }*/
-  /*  const double ratio = 1 - ((correction + 1) / stretchRatio);*/
-  /*  if (a.type != Particle::Active && b.type != Particle::Active) {*/
-  /*    continue;*/
-  /*  }*/
-  /*  if (a.type != Particle::Active) {*/
-  /*    Vec3f moveVector = distance;*/
-  /*    moveVector *= ratio;*/
-  /*    b.position += moveVector;*/
-  /*  } else if (b.type != Particle::Active) {*/
-  /*    Vec3f moveVector = distance;*/
-  /*    moveVector *= ratio;*/
-  /*    a.position -= moveVector;*/
-  /*  } else {*/
-  /*    Vec3f moveVector = distance;*/
-  /*    moveVector *= ratio;*/
-  /*    moveVector /= 2;*/
-  /*    a.position -= moveVector;*/
-  /*    b.position += moveVector;*/
-  /*  }*/
-  /*}*/
+  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
+      const ClothParticle& p = getParticle(i, j);
+      if (p.type != Particle::Active) {
+        continue;
+      }
+      correctParticle(i, j, Offset::Structural, correction);
+      correctParticle(i, j, Offset::Shear, correction);
+    }
+  }
 }
 
 void Cloth::performTimestepSimulation(int t) {

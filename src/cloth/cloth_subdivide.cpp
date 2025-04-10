@@ -16,15 +16,11 @@ void Cloth::IncreaseClothDensity() {
 void Cloth::AddSubdividedParticles(int i, int j, int distance) {
   ClothParticle& p = particles[i][j];
 
-  static const vector<Offset> offsets = {
-      {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
-  };
-
-  for (const Offset offset : offsets) {
+  for (const Offset::Offset offset : Offset::Surrounding) {
     const int xIdx = i + (distance * offset.first);
     const int yIdx = j + (distance * offset.second);
 
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
 
@@ -49,14 +45,11 @@ void Cloth::AddSubdividedParticles(int i, int j, int distance) {
   }
 }
 void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
-  static const vector<Offset> interpOffsets = {
-      {1, 2}, {1, -2}, {2, 1}, {2, -1}, {-1, 2}, {-1, -2}, {-2, 1}, {-2, -1},
-  };
   int interpLayer = getParticle(i, j).layer - 1;
-  for (const Offset offset : interpOffsets) {
+  for (const Offset::Offset offset : Offset::Interp) {
     const int xIdx = i + (distance * offset.first);
     const int yIdx = j + (distance * offset.second);
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
 
@@ -86,16 +79,12 @@ void Cloth::SubdivideAboutPoint(int i, int j) {
   assert(p.layer < maximumSubdivision);
   assert(p.type == Particle::Active || p.type == Particle::Fixed);
 
-  static const vector<Offset> offsets = {
-      {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
-  };
-
-  const int distance = 1 << (maximumSubdivision - p.layer - 1);
+  const int distance = scale(p.layer + 1);
   //add previous layers up to current layer
-  for (const Offset offset : offsets) {
+  for (const Offset::Offset offset : Offset::Surrounding) {
     const int xIdx = i + (2 * distance * offset.first);
     const int yIdx = j + (2 * distance * offset.second);
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
     if (particles[xIdx][yIdx].type == Particle::None) {
