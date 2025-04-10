@@ -81,6 +81,9 @@ class Cloth {
   void PackClothSurface(float*& current);
   void PackClothVelocities(float*& current);
   void Animate();
+  std::vector<std::vector<bool>> getShouldSubdivide(float threshold);
+  void subdivide();
+  void interpolate();
 
  private:
   // PRIVATE ACCESSORS
