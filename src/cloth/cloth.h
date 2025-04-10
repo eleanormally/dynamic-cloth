@@ -60,73 +60,10 @@ class ClothParticle {
 // =====================================================================================
 // Cloth System
 // =====================================================================================
-
-typedef struct Pos {
-  int x;
-  int y;
-  Pos(int _x, int _y) : x(_x), y(_y) {}
-  Pos() {}
-  bool operator==(const Pos& p) const { return x == p.x && y == p.y; }
-  void operator*=(const int m) {
-    x *= m;
-    y *= m;
-  }
-  bool operator<(const Pos& p) const {
-    if (x != p.x) {
-      return x < p.x;
-    }
-    return y < p.y;
-  }
-} Pos;
-using std::hash;
-template <>
-struct std::hash<Pos> {
-  size_t operator()(const Pos& p) const {
-    return (hash<int>()(p.x) << 16) ^ hash<int>()(p.y);
-  }
-};
-
-typedef struct PosPair {
-  Pos a;
-  Pos b;
-  int layer;
-  PosPair(Pos _a, Pos _b, int _layer) : a(_a), b(_b), layer(_layer) {
-    if (b < a) {
-      std::swap(a, b);
-    }
-  }
-  PosPair(int x1, int y1, int x2, int y2, int _layer)
-      : a(Pos(x1, y1)), b(Pos(x2, y2)), layer(_layer) {
-    if (b < a) {
-      std::swap(a, b);
-    }
-  }
-  bool operator==(const PosPair& pp) const {
-    return layer == pp.layer && pp.a == a && pp.b == b;
-  }
-  void operator*=(int m) {
-    a.x *= m;
-    a.y *= m;
-    b.x *= m;
-    b.y *= m;
-  }
-  friend PosPair operator*(const PosPair& p, const int m) {
-    PosPair out = p;
-    out *= m;
-    return out;
-  }
-} PosPair;
-template <>
-struct std::hash<PosPair> {
-  //making sure that pospair hashes to the same value no matter the order
-  size_t operator()(const PosPair& pp) const {
-    return ((hash<Pos>()(pp.a) << 1 ^ hash<Pos>()(pp.b)) >> 1) ^
-           (hash<int>()(pp.layer + 1) << 16);
-  }
-};
-
 class Cloth {
  private:
+  typedef std::pair<int, int> Offset;
+
   void DebugPrintCloth() const;
   void AdjustInterpolated();
   void IncreaseClothDensity();
@@ -134,15 +71,14 @@ class Cloth {
   void SubdivideAboutPoint(int i, int j);
   void AddSubdividedParticles(int i, int j, int distance);
   void AddInterpolatedParticles(int i, int j, int distance);
-  void RegenerateSprings(int i, int j, int distance);
 
   void  performTimestepSimulation(int t);
   void  updateForces(int t, vector<vector<Vec3f>>& forces);
   void  updateVelocities(int t, const vector<vector<Vec3f>>& forces);
   void  updatePositions();
   void  correctPositions();
-  Vec3f reduceForceOverOffsets(
-      int i, int j, const vector<std::pair<int, int>>& offsets) const;
+  Vec3f reduceForceOverOffsets(int i, int j, const vector<Offset>& offsets,
+                               double k) const;
 
  public:
   Cloth(ArgParser* args);
@@ -181,14 +117,13 @@ class Cloth {
   // REPRESENTATION
   ArgParser* args;
   // grid data structure
-  int                                 initialX;
-  int                                 initialY;
-  int                                 nx;
-  int                                 ny;
-  int                                 maximumSubdivision;
-  vector<vector<ClothParticle>>       particles;
-  std::unordered_map<PosPair, double> springs;
-  BoundingBox                         box;
+  int                           initialX;
+  int                           initialY;
+  int                           nx;
+  int                           ny;
+  int                           maximumSubdivision;
+  vector<vector<ClothParticle>> particles;
+  BoundingBox                   box;
   // simulation parameters
   double damping;
   // spring constants

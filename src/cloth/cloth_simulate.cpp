@@ -6,8 +6,7 @@ void Cloth::AdjustInterpolated() {
       if (p.type != Particle::Interp) {
         continue;
       }
-      int distance = 1 << (maximumSubdivision - p.layer);
-      assert(distance >= 0);  //should never be interpolating across base layer
+      int  distance = 1 << (maximumSubdivision - p.layer);
       bool rowInterp = i % distance == distance / 2;
       int  iDelta = 0;
       int  jDelta = 0;
@@ -22,7 +21,7 @@ void Cloth::AdjustInterpolated() {
   }
 }
 
-bool shouldSimulate(int t, const ClothParticle& p) {
+inline bool shouldSimulate(int t, const ClothParticle& p) {
   return p.type == Particle::Active && ((1 << p.layer) - 1 >= t);
 }
 
@@ -37,41 +36,44 @@ Vec3f forceToPoint(double k, const ClothParticle& source,
   const Vec3f total = k * (length - dist);
   return total;
 }
-Vec3f Cloth::reduceForceOverOffsets(
-    int i, int j, const vector<std::pair<int, int>>& offsets) const {
+Vec3f Cloth::reduceForceOverOffsets(int i, int j, const vector<Offset>& offsets,
+                                    double k) const {
   Vec3f                force = Vec3f::zero();
   const ClothParticle& p = getParticle(i, j);
-  const int            distance = 1 << (maximumSubdivision - p.layer);
-  for (const std::pair<int, int>& offset : offsets) {
+
+  const int distance = 1 << (maximumSubdivision - p.layer);
+  const int forceMultiplier = 1 << p.layer;
+
+  for (const Offset& offset : offsets) {
     int iOffset = i + offset.first * distance;
     int jOffset = j + offset.second * distance;
     if (iOffset < 0 || jOffset < 0 || iOffset >= nx || jOffset >= ny) {
       continue;
     }
-    const auto k = springs.find(PosPair(i, j, iOffset, jOffset, p.layer));
-    assert(k != springs.end());
-    const ClothParticle& adj =
-        getParticle(i + offset.first * distance, j + offset.second * distance);
-    force += forceToPoint(k->second, p, adj);
+    const ClothParticle& adj = getParticle(iOffset, jOffset);
+    if (adj.type == Particle::None) {
+      continue;
+    }
+    force += forceToPoint(k * (double)forceMultiplier, p, adj);
   }
   return force;
 }
 
 void Cloth::updateForces(int t, vector<vector<Vec3f>>& forces) {
   using std::pair;
-  const static vector<pair<int, int>> structuralOffsets = {
+  const static vector<Offset> structuralOffsets = {
       {0, 1},
       {0, -1},
       {1, 0},
       {-1, 0},
   };
-  const static vector<pair<int, int>> bendOffsets = {
+  const static vector<Offset> bendOffsets = {
       {0, 2},
       {0, -2},
       {2, 0},
       {-2, 0},
   };
-  const static vector<pair<int, int>> shearOffsets = {
+  const static vector<Offset> shearOffsets = {
       {1, 1},
       {1, -1},
       {-1, 1},
@@ -84,9 +86,10 @@ void Cloth::updateForces(int t, vector<vector<Vec3f>>& forces) {
         continue;
       }
       forces[i][j] = Vec3f::zero();
-      forces[i][j] += reduceForceOverOffsets(i, j, structuralOffsets);
-      forces[i][j] += reduceForceOverOffsets(i, j, shearOffsets);
-      forces[i][j] += reduceForceOverOffsets(i, j, bendOffsets);
+      forces[i][j] +=
+          reduceForceOverOffsets(i, j, structuralOffsets, k_structural);
+      forces[i][j] += reduceForceOverOffsets(i, j, shearOffsets, k_shear);
+      forces[i][j] += reduceForceOverOffsets(i, j, bendOffsets, k_bend);
       Vec3f gForce = Vec3f(GLOBAL_args->mesh_data->gravity);
       gForce *= p.mass;
       forces[i][j] += gForce;
@@ -127,40 +130,40 @@ void Cloth::updatePositions() {
 }
 
 void Cloth::correctPositions() {
-  for (const auto& pair : springs) {
-    ClothParticle& a = particles[pair.first.a.x][pair.first.a.y];
-    ClothParticle& b = particles[pair.first.b.x][pair.first.b.y];
-    if (a.type == Particle::None || b.type == Particle::None) {
-      continue;
-    }
-
-    const Vec3f distance = a.position - b.position;
-    const Vec3f originalDistance = a.originalPosition - b.originalPosition;
-
-    double stretchRatio = distance.Length() / originalDistance.Length();
-    if (stretchRatio - 1.0 < correction) {
-      continue;
-    }
-    const double ratio = 1 - ((correction + 1) / stretchRatio);
-    if (a.type != Particle::Active && b.type != Particle::Active) {
-      continue;
-    }
-    if (a.type != Particle::Active) {
-      Vec3f moveVector = distance;
-      moveVector *= ratio;
-      b.position += moveVector;
-    } else if (b.type != Particle::Active) {
-      Vec3f moveVector = distance;
-      moveVector *= ratio;
-      a.position -= moveVector;
-    } else {
-      Vec3f moveVector = distance;
-      moveVector *= ratio;
-      moveVector /= 2;
-      a.position -= moveVector;
-      b.position += moveVector;
-    }
-  }
+  /*for (const auto& pair : springs) {*/
+  /*  ClothParticle& a = particles[pair.first.a.x][pair.first.a.y];*/
+  /*  ClothParticle& b = particles[pair.first.b.x][pair.first.b.y];*/
+  /*  if (a.type == Particle::None || b.type == Particle::None) {*/
+  /*    continue;*/
+  /*  }*/
+  /**/
+  /*  const Vec3f distance = a.position - b.position;*/
+  /*  const Vec3f originalDistance = a.originalPosition - b.originalPosition;*/
+  /**/
+  /*  double stretchRatio = distance.Length() / originalDistance.Length();*/
+  /*  if (stretchRatio - 1.0 < correction) {*/
+  /*    continue;*/
+  /*  }*/
+  /*  const double ratio = 1 - ((correction + 1) / stretchRatio);*/
+  /*  if (a.type != Particle::Active && b.type != Particle::Active) {*/
+  /*    continue;*/
+  /*  }*/
+  /*  if (a.type != Particle::Active) {*/
+  /*    Vec3f moveVector = distance;*/
+  /*    moveVector *= ratio;*/
+  /*    b.position += moveVector;*/
+  /*  } else if (b.type != Particle::Active) {*/
+  /*    Vec3f moveVector = distance;*/
+  /*    moveVector *= ratio;*/
+  /*    a.position -= moveVector;*/
+  /*  } else {*/
+  /*    Vec3f moveVector = distance;*/
+  /*    moveVector *= ratio;*/
+  /*    moveVector /= 2;*/
+  /*    a.position -= moveVector;*/
+  /*    b.position += moveVector;*/
+  /*  }*/
+  /*}*/
 }
 
 void Cloth::performTimestepSimulation(int t) {

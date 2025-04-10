@@ -90,56 +90,6 @@ Cloth::Cloth(ArgParser* _args) {
       p.layer = 0;
     }
   }
-  // create the springs
-  for (int i = 1; i < initialX - 1; i++) {
-    for (int j = 1; j < initialY - 1; j++) {
-      int xIdx = i * 2;
-      int yIdx = j * 2;
-      //structural
-      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx + 2, 0)] = k_structural;
-      springs[PosPair(xIdx, yIdx, xIdx, yIdx - 2, 0)] = k_structural;
-      //shear
-      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx + 2, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx + 2, yIdx - 2, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx + 2, 0)] = k_shear;
-      springs[PosPair(xIdx, yIdx, xIdx - 2, yIdx - 2, 0)] = k_shear;
-      //bend
-      if (xIdx >= 4) {
-        springs[PosPair(xIdx, yIdx, xIdx - 4, yIdx, 0)] = k_bend;
-      }
-      if (xIdx + 4 < nx) {
-        springs[PosPair(xIdx, yIdx, xIdx + 4, yIdx, 0)] = k_bend;
-      }
-      if (yIdx >= 4) {
-        springs[PosPair(xIdx, yIdx, xIdx, yIdx - 4, 0)] = k_bend;
-      }
-      if (yIdx + 4 < ny) {
-        springs[PosPair(xIdx, yIdx, xIdx, yIdx + 4, 0)] = k_bend;
-      }
-    }
-  }
-  for (int i = 1; i < initialX; i++) {
-    springs[PosPair(i * 2, 0, i * 2 - 2, 0, 0)] = k_structural;
-    springs[PosPair(i * 2, ny - 1, i * 2 - 2, ny - 1, 0)] = k_structural;
-    if (i > 1) {
-      springs[PosPair(i * 2, 0, i * 2 - 4, 0, 0)] = k_bend;
-      springs[PosPair(i * 2, ny - 1, i * 2 - 4, ny - 1, 0)] = k_bend;
-    }
-  }
-  for (int i = 1; i < initialY; i++) {
-    springs[PosPair(0, i * 2, 0, i * 2 - 2, 0)] = k_structural;
-    springs[PosPair(nx - 1, i * 2, nx - 1, i * 2 - 2, 0)] = k_structural;
-    if (i > 1) {
-      springs[PosPair(0, i * 2, 0, i * 2 - 4, 0)] = k_bend;
-      springs[PosPair(nx - 1, i * 2, nx - 1, i * 2 - 4, 0)] = k_bend;
-    }
-  }
-  springs[PosPair(0, 2, 2, 0, 0)] = k_shear;
-  springs[PosPair(nx - 3, ny - 1, nx - 1, ny - 3, 0)] = k_shear;
-  springs[PosPair(nx - 3, 0, nx - 1, 2, 0)] = k_shear;
-  springs[PosPair(0, ny - 3, 2, ny - 1, 0)] = k_shear;
 
   // parse timestep
   istr >> token >> mesh_data->timestep;
