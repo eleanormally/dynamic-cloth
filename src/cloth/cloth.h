@@ -141,5 +141,7 @@ class Cloth {
 };
 
 // ========================================================================
+Vec3f calculateHangingMidpoint(const ClothParticle& p1, const ClothParticle& p2,
+                               const double k);
 
 #endif

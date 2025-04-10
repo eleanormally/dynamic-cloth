@@ -1,0 +1,60 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath} 
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{tikz}
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+\hskip -\arraycolsep
+\let\@ifnextchar\new@ifnextchar
+\array{#1}}
+\makeatother
+\author{Eleanor Olson}
+\title{Calculating a Feasible Parabolic Hanging Midpoint}
+
+\begin{document}
+
+\maketitle
+Consider the following problem: Given a string of length $l$, let us approximate the angle that $l$'s midpoint will create with its endpoints $A$ and $B$, ($A, B \in \mathbb{R}^2$). This $l$ may further be defined as a scalar input $k$, multiplied by the distance of 2 original points. As such, we may use $l$ throughout this problem as a stand in for:\\
+\indent $l=k\cdot ||M-N||$\\
+Where $M$ and $N$ are points in $\mathbb{R}^2$.\\\\
+To approximate the position of the point along their midpoint, let us think of the hanging function as a parabola. While this is not physically accurate, it will be easier to calcuate and can rougly approximate the physically correct catenary. We will also assume the following:
+\indent\begin{itemize}
+\item The string of length $l$ is perfectly inelastic
+\item The positions of $A$ and $B$ will be close enough such that $||A-B|| \leq k\cdot ||M-N||$. If this is not the case, we may consider the angle a perfect $\pi$.
+\end{itemize}
+\newpage
+\section{Possible Parabolas}
+First, let us define the set of all parabolas that will contain $A$ and $B$. Let us define our parabola $f(x) = ax^2+bx+c$.\\\\
+$\begin{aligned}
+f(A_x) = A_y &= aA_x^2+bA_x+c\\
+f(B_x) = B_y &= aB_x^2+bB_x+c\\\\
+A_y-B_y &= a(A_x^2-B_x^2)+b(A_x-B_x)\\
+&= a(A_x+B_x)(A_x-B_x)+b(A_x-B_x)\\
+\frac{A_y-B_y}{A_x-B_x} &= a(A_x+B_x)+b\\\\
+b &= \frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\\\\\
+A_y&=aA_x^2+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right)A_x +c\\
+c &= A_y - aA_x^2+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right)A_x\\\\\\
+f(x) &= ax^2+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right)x+A_y - aA_x^2+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right)A_x
+\end{aligned}$\\\\\\
+we now have an explicit equation for our parabola given we can solve for $a$. Now, let us determine the set of possible $a$'s through our provided $l$.
+\newpage
+\section{Arc Length}
+We can define the arc length of our parabola as:\\
+$\int \limits_{A_x}^{B_x}\sqrt{1+f'(x)^2}dx = l$\\\\
+From above, we can evaluate:\\
+$f'(x) = 2ax+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right) \\
+\indent\to \\
+\int \limits_{A_x}^{B_x}\sqrt{1+2ax+\left(\frac{A_y-B_y}{A_x-B_x}-a(A_x+B_x)\right)}dx = l\\\\
+\left(\frac{\left(-a(A_x+B_x)+2ax+\frac{A_y-B_y}{A_x-B_x}+1\right)^\frac{3}{2}}{3a}\right) \biggr\rvert_{x=A_x}^{x=B_x}=l\\\\
+\frac{\left(-a(A_x+B_x)+2aB_x+\frac{A_y-B_y}{A_x-B_x}+1\right)^\frac{3}{2}-\left(-a(A_x+B_x)+2aA_x+\frac{A_y-B_y}{A_x-B_x}+1\right)^\frac{3}{2}}{3a}= l\\
+$\\\\
+To further simplify, let us set the position of $A$ to be $(0,0)$ (this is perfectly reasonable as we are projecting into $\mathbb{R}^2$ anyways). Therefore, we have the equation\\
+$\frac{\left(-aB_x+2aB_x+\frac{B_y}{B_x}+1\right)^\frac{3}{2}-\left(-aB_x+\frac{B_y}{B_x}+1\right)^\frac{3}{2}}{3a}= l$\\\\
+$\frac{\left(aB_x+\frac{B_y}{B_x}+1\right)^\frac{3}{2}-\left(-aB_x+\frac{B_y}{B_x}+1\right)^\frac{3}{2}}{3a}= l$\\\\
+\\\\
+Given this simplification, we may also simplify our definition of $b$ and $c$ to:\\
+\indent $b = \frac{B_y}{B_x}-a(B_x)$\\
+\indent $c = 0$\\\\
+To properly solve this, we must simply plug in our values for $B_x, B_y,$ and $l$, then solve for $a$ numerically. Finally, we can plug our midpoint in and get the position, from which it is trivial to calculate its angle.
+\end{document}

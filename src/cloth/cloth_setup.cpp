@@ -116,6 +116,7 @@ Cloth::Cloth(ArgParser* _args) {
   SubdivideAboutPoint(20, 20);
   SubdivideAboutPoint(20, 20);
 
+  AdjustInterpolated();
   //TEST
   computeBoundingBox();
 }
