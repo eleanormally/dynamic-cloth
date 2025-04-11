@@ -27,6 +27,9 @@ double solve(std::function<double(double)> equation, double upperBound) {
 Vec3f calculateHangingMidpoint(const ClothParticle& p1, const ClothParticle& p2,
                                const double k) {
   double length = (p1.originalPosition - p2.originalPosition).Length() * k;
+  if ((p2.position - p1.position).Length() > length) {
+    return Vec3f::interp(p1.position, p2.position);
+  }
 
   double Bx = Vec3f(p2.position.x() - p1.position.x(),
                     p2.position.y() - p1.position.y(), 0)
