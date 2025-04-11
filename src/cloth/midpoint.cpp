@@ -26,26 +26,29 @@ double solve(std::function<double(double)> equation, double upperBound) {
 //See midpoint pdf writeup
 Vec3f calculateHangingMidpoint(const ClothParticle& p1, const ClothParticle& p2,
                                const double k) {
-  double length = (p1.originalPosition - p2.originalPosition).Length() * k;
+  //TODO incorporate spring stiffness into hanging
+  const double length =
+      (p1.originalPosition - p2.originalPosition).Length() * k;
   if ((p2.position - p1.position).Length() > length) {
     return Vec3f::interp(p1.position, p2.position);
   }
 
-  double Bx = Vec3f(p2.position.x() - p1.position.x(),
-                    p2.position.y() - p1.position.y(), 0)
-                  .Length();
-  double By = p2.position.z() - p1.position.z();
+  const double Bx = Vec3f(p2.position.x() - p1.position.x(), 0,
+                          p2.position.z() - p1.position.z())
+                        .Length();
+  const double By = p2.position.y() - p1.position.y();
 
-  double m = By / Bx;
+  const double m = By / Bx;
 
   using std::pow;
-  auto antiderivative = [m, Bx](double a, double x) {
-    double q = -1 * a * Bx + 2 * a * x + m;
-    double v = sqrt(q * q + 1);
-    double qv = q / v;
+  const auto antiderivative = [m, Bx](double a, double x) constexpr {
+    const double q = -1 * a * Bx + 2 * a * x + m;
+    const double v = sqrt(q * q + 1);
+    const double qv = q / v;
     return -0.25 * Bx * v + 0.5 * x * v + m * v / (4 * a) +
            (log(1 + qv) - log(1 - qv)) / (8 * a);
   };
+
   auto equation = [&antiderivative, Bx, length](double a) {
     return antiderivative(a, Bx) - antiderivative(a, 0) - length;
   };
@@ -57,6 +60,6 @@ Vec3f calculateHangingMidpoint(const ClothParticle& p1, const ClothParticle& p2,
       a * midpointX * midpointX + ((By / Bx) - a * Bx) * midpointX;
 
   Vec3f midpoint = Vec3f::interp(p1.position, p2.position);
-  midpoint.setz(midpointHeight);
+  midpoint.sety(midpointHeight);
   return midpoint;
 }

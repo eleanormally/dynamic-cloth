@@ -1,5 +1,5 @@
-#include "cloth.h"
 #include <cmath>
+#include "cloth.h"
 
 void Cloth::AdjustInterpolated() {
   for (int i = 0; i < nx; i++) {
@@ -17,8 +17,12 @@ void Cloth::AdjustInterpolated() {
       } else {
         jDelta = distance / 2;
       }
-      p.inPlaceInterp(particles[i + iDelta][j + jDelta],
-                      particles[i - iDelta][j - jDelta]);
+      const ClothParticle& l = getParticle(i - iDelta, j - jDelta);
+      const ClothParticle& r = getParticle(i + iDelta, j + jDelta);
+      assert(l.type != Particle::None);
+      assert(r.type != Particle::None);
+
+      p.inPlaceInterp(l, r);
     }
   }
 }
@@ -177,13 +181,20 @@ void Cloth::performTimestepSimulation(int t) {
 }
 
 void Cloth::Animate() {
-  for (int t = 0; t < (1 << maximumSubdivision); t++) {
+  static int animations;
+  if (animations == timestamps_per_subdivision - 1) {
+    animations = 0;
+    Subdivide();
+  } else {
+    animations++;
+  }
+  for (int t = (1 << maximumSubdivision) - 1; t >= 0; t--) {
     performTimestepSimulation(t);
   }
   AdjustInterpolated();
 }
 
-float getAngle(Vec3f p1, Vec3f p2, Vec3f p3){
+float getAngle(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3) {
   Vec3f p12 = p1 - p2;
   Vec3f p23 = p2 - p3;
   p12.Normalize();
@@ -191,59 +202,62 @@ float getAngle(Vec3f p1, Vec3f p2, Vec3f p3){
   return acos(p12.Dot3(p23));
 }
 
-
-std::vector<std::vector<bool>> Cloth::getShouldSubdivide(float threshold){
-  std::vector<std::vector<bool>> result;
-  for(int i = 0; i < (int)particles.size(); i++){
-    std::vector<bool> rowResults;
-    for(int j = 0; j < (int)particles[i].size(); j ++){
-      ClothParticle p = getParticle(i, j);
-      Vec3f pos = getParticle(i, j).position;
-      Vec3f north = pos;
-      Vec3f south = pos;
-      Vec3f east = pos;
-      Vec3f west = pos;
-      if (i - 1 >= 0)
-        north = getParticle(i - 1, j).position;
-      if (i + 1 < nx)
-        south = getParticle(i + 1, j).position;
-      if (j - 1 >= 0)
-        east = getParticle(i, j - 1).position;
-      if (j + 1 < ny)
-        west = getParticle(i, j + 1).position;
-      if(i - 1 >= 0 && i + 1 < nx){
-        if(j - 1 >= 0 && j + 1 < ny){
-          float t1 = getAngle(south, pos, north);
-          float t2 = getAngle(west, pos, east);
-          std::cout << t1 << " " << t2 << std::endl;
-          if(t1 > threshold || t2 > threshold){
-            rowResults.push_back(true);
-            continue;
-          }
+vector<vector<bool>> Cloth::getShouldSubdivide(float threshold) {
+  vector<vector<bool>> result(nx, vector<bool>(ny, false));
+  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
+      const ClothParticle& p = getParticle(i, j);
+      if (p.type != Particle::Active) {
+        continue;
+      }
+      for (const Offset::Offset offset : Offset::Cardinal) {
+        int distance = scale(p.layer);
+        int deltaI = distance * offset.first;
+        int deltaJ = distance * offset.second;
+        if (!inBounds(i + deltaI, j + deltaJ) ||
+            !inBounds(i - deltaI, j - deltaJ)) {
+          continue;
         }
-        else{
-          float t1 = getAngle(south, pos, north);
-          if(t1 > threshold){
-            rowResults.push_back(true);
-            continue;
-        }   
+
+        const ClothParticle& l = getParticle(i - deltaI, j - deltaJ);
+        const ClothParticle& r = getParticle(i + deltaI, j + deltaJ);
+        if (l.type == Particle::None || r.type == Particle::None) {
+          continue;
+        }
+
+        float angle = getAngle(l.position, p.position, r.position);
+        if (angle > threshold) {
+          result[i][j] = true;
+          break;
+        }
       }
     }
-    else if(j - 1 >= 0 && j + 1 < ny){
-      float t1 = getAngle(east, pos, west);
-          if(t1 > threshold){
-            rowResults.push_back(true);
-            continue;
-    }   
-    }
-    rowResults.push_back(false);
-  }
-    result.push_back(rowResults);
   }
   return result;
 }
 
+void Cloth::Subdivide() {
+  vector<vector<bool>> subdivisions = getShouldSubdivide(subdivision_angle);
 
-void Cloth::subdivide() {
-  // Todo: figure out threshold
+  bool increaseDensity = false;
+  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
+      if (getParticle(i, j).layer == maximumSubdivision && subdivisions[i][j]) {
+        increaseDensity = true;
+      }
+    }
+  }
+  if (increaseDensity) {
+    IncreaseClothDensity();
+  }
+  //using subdivisions.size() since we may have increased nx/ny above
+  for (int i = 0; i < (int)subdivisions.size(); i++) {
+    for (int j = 0; j < (int)subdivisions[0].size(); j++) {
+      if (subdivisions[i][j]) {
+        int x = increaseDensity ? i * 2 : i;
+        int y = increaseDensity ? j * 2 : j;
+        SubdivideAboutPoint(x, y);
+      }
+    }
+  }
 }

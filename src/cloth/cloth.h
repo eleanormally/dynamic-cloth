@@ -63,12 +63,18 @@ class ClothParticle {
 class Cloth {
  private:
   void DebugPrintCloth() const;
+
   void AdjustInterpolated();
   void IncreaseClothDensity();
 
   void SubdivideAboutPoint(int i, int j);
-  void AddSubdividedParticles(int i, int j, int distance);
   void AddInterpolatedParticles(int i, int j, int distance);
+  void AddSubdividedParticles(int i, int j, int distance);
+  void AdjustSubdividedParticle(int i, int j, int distance);
+
+  std::vector<std::vector<bool>> getShouldSubdivide(float threshold);
+
+  void Subdivide();
 
   void  performTimestepSimulation(int t);
   void  updateForces(int t, vector<vector<Vec3f>>& forces);
@@ -79,10 +85,10 @@ class Cloth {
   Vec3f reduceForceOverOffsets(int i, int j, const Offset::Vec& offsets,
                                double k) const;
 
-  inline int scale(int layer) const {
+  inline int scale(const int layer) const {
     return 1 << (maximumSubdivision - layer);
   }
-  inline bool inBounds(int i, int j) const {
+  inline bool inBounds(const int i, const int j) const {
     return i >= 0 && i < nx && j >= 0 && j < ny;
   }
 
@@ -97,9 +103,6 @@ class Cloth {
   void PackClothSurface(float*& current);
   void PackClothVelocities(float*& current);
   void Animate();
-  std::vector<std::vector<bool>> getShouldSubdivide(float threshold);
-  void subdivide();
-  void interpolate();
 
  private:
   // PRIVATE ACCESSORS
@@ -141,6 +144,11 @@ class Cloth {
   double k_bend;
   // correction thresholds
   double correction;
+  //subdivision parameters;
+  double subdivision_angle;
+  double hanging_coefficient;
+  int    timestamps_per_subdivision;
+  int    subdivision_limit;
 };
 
 // ========================================================================

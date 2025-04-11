@@ -188,7 +188,7 @@ endif()
 # COMPILATION FLAGS
 if (APPLE)
 
-  set(MY_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -Wall -Wextra -O3")
+  set(MY_CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -g -Wall -Wextra ")
 
   # src specific compilation flags (to mix c++ and objective c)
   # http://ysflight.in.coocan.jp/programming/cmake/e.html
