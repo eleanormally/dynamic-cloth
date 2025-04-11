@@ -29,10 +29,8 @@ Cloth::Cloth(ArgParser* _args) {
   // NOTE: correction factor == .1, means springs shouldn't stretch more than
   // 10%
   //       correction factor == 100, means don't do ainitialY correction
-  istr >> token >> provot_structural_correction;
-  assert(token == "provot_structural_correction");
-  istr >> token >> provot_shear_correction;
-  assert(token == "provot_shear_correction");
+  istr >> token >> correction;
+  assert(token == "correction");
 
   // the cloth dimensions
   istr >> token >> initialX >> initialY;
@@ -66,9 +64,14 @@ Cloth::Cloth(ArgParser* _args) {
   assert(token == "fabric_weight");
   double area = AreaOfTriangle(a, b, c) + AreaOfTriangle(a, c, d);
 
+  //set up initial subdivisions
+  maximumSubdivision = 1;
+  nx = initialX * 2 - 1;
+  ny = initialY * 2 - 1;
+
   // create the particles
   particles = vector<vector<ClothParticle>>(
-      initialX, vector<ClothParticle>(initialY, ClothParticle()));
+      nx, vector<ClothParticle>(ny, ClothParticle()));
   double mass = area * fabric_weight / double(initialX * initialY);
   for (int i = 0; i < initialX; i++) {
     double x = i / double(initialX - 1);
@@ -76,34 +79,15 @@ Cloth::Cloth(ArgParser* _args) {
     Vec3f  dc = float(1 - x) * d + float(x) * c;
     for (int j = 0; j < initialY; j++) {
       double y = j / double(initialY - 1);
-      particles[i][j] = ClothParticle();
-      ClothParticle& p = particles[i][j];
+      particles[i * 2][j * 2] = ClothParticle();
+      ClothParticle& p = particles[i * 2][j * 2];
       Vec3f          abdc = float(1 - y) * ab + float(y) * dc;
       p.position = abdc;
+      p.originalPosition = abdc;
       p.velocity = Vec3f::zero();
       p.mass = mass;
       p.type = Particle::Active;
-    }
-  }
-
-  // create the springs
-  for (int i = 1; i < initialX - 1; i++) {
-    for (int j = 1; j < initialY - 1; j++) {
-      //structural
-      springs[PosPair(i, j, i + 1, j)] = k_structural;
-      springs[PosPair(i, j, i - 1, j)] = k_structural;
-      springs[PosPair(i, j, i, j + 1)] = k_structural;
-      springs[PosPair(i, j, i, j - 1)] = k_structural;
-      //shear
-      springs[PosPair(i, j, i + 1, j + 1)] = k_shear;
-      springs[PosPair(i, j, i + 1, j - 1)] = k_shear;
-      springs[PosPair(i, j, i - 1, j + 1)] = k_shear;
-      springs[PosPair(i, j, i - 1, j - 1)] = k_shear;
-      //bend
-      springs[PosPair(i, j, i + 2, j)] = k_bend;
-      springs[PosPair(i, j, i - 2, j)] = k_bend;
-      springs[PosPair(i, j, i, j + 2)] = k_bend;
-      springs[PosPair(i, j, i, j - 2)] = k_bend;
+      p.layer = 0;
     }
   }
 
@@ -118,12 +102,28 @@ Cloth::Cloth(ArgParser* _args) {
     int    i, j;
     double x, y, z;
     istr >> i >> j >> x >> y >> z;
-    ClothParticle& p = particles[i][j];
+    ClothParticle& p = particles[i * 2][j * 2];
     p.position = Vec3f(x, y, z);
+    p.originalPosition = p.position;
     p.type = Particle::Fixed;
   }
+  SubdivideAboutPoint(8, 8);
+  IncreaseClothDensity();
+  SubdivideAboutPoint(16, 16);
+  SubdivideAboutPoint(0, 0);
+  SubdivideAboutPoint(24, 24);
+  SubdivideAboutPoint(24, 16);
+  SubdivideAboutPoint(20, 20);
+  SubdivideAboutPoint(20, 20);
 
+  AdjustInterpolated();
+  //TEST
   computeBoundingBox();
+  std::cout << particles[4][4].position << std::endl
+            << particles[8][4].position << std::endl
+            << calculateHangingMidpoint(particles[4][4], particles[8][4], 1.25)
+            << std::endl
+            << std::endl;
 }
 
 // ================================================================================
@@ -131,8 +131,8 @@ Cloth::Cloth(ArgParser* _args) {
 void Cloth::computeBoundingBox() {
   // TODO: update for new data structure
   box = BoundingBox(getParticle(0, 0).position);
-  for (int i = 0; i < initialX; i++) {
-    for (int j = 0; j < initialY; j++) {
+  for (int i = 0; i < nx; i++) {
+    for (int j = 0; j < ny; j++) {
       if (hasParticle(i, j)) {
         box.Extend(getParticle(i, j).position);
       }

@@ -1,0 +1,68 @@
+\documentclass[11pt]{article}
+\usepackage{amsmath} 
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{tikz}
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+\hskip -\arraycolsep
+\let\@ifnextchar\new@ifnextchar
+\array{#1}}
+\makeatother
+\author{Eleanor Olson}
+\title{Calculating a Feasible Parabolic Hanging Midpoint}
+
+\begin{document}
+
+\maketitle
+Consider the following problem: Given a string of length $l$, let us approximate the angle that $l$'s midpoint will create with its endpoints $A$ and $B$, ($A, B \in \mathbb{R}^2$). This $l$ may further be defined as a scalar input $k$, multiplied by the distance of 2 original points. As such, we may use $l$ throughout this problem as a stand in for:\\
+\indent $l=k\cdot ||M-N||$\\
+Where $M$ and $N$ are points in $\mathbb{R}^2$.\\\\
+To approximate the position of the point along their midpoint, let us think of the hanging function as a parabola. While this is not physically accurate, it will be easier to calcuate and can rougly approximate the physically correct catenary. We will also assume the following:
+\indent\begin{itemize}
+\item The string of length $l$ is perfectly inelastic
+\item The positions of $A$ and $B$ will be close enough such that $||A-B|| \leq k\cdot ||M-N||$. If this is not the case, we may consider the angle a perfect $\pi$.
+\end{itemize}
+To further simplify, we shall also assume that $A$ exists at the point $(0,0)$.
+\newpage
+\section{Possible Parabolas}
+First, let us define the set of all parabolas that will contain $A$ and $B$. Let us define our parabola $f(x) = ax^2+bx+c$.\\\\
+$\begin{aligned}
+f(A_x) = 0 &= c\\
+f(B_x) = B_y &= aB_x^2+bB_x+c\\\\
+B_y &= aB_x^2+bB_x\\
+b &= \frac{B_y-aB_x^2}{B_x} = \frac{B_y}{B_x}-aB_x\\\\
+f(x) &= ax^2+\left(\frac{B_y}{B_x}-aB_x\right)x
+\end{aligned}$\\\\\\
+we now have an explicit equation for our parabola given we can solve for $a$. Now, let us determine the set of possible $a$'s through our provided $l$.
+\newpage
+\section{Arc Length}
+We can define the arc length of our parabola as:\\
+$\int \limits_{0}^{B_x}\sqrt{1+f'(x)^2}dx = l$\\\\
+From above, we can evaluate:\\
+$f'(x) = 2ax + \frac{B_y}{B_x}-aB_x \\
+\indent\to \\
+\int \limits_{0}^{B_x}\sqrt{1+(2ax+\frac{B_y}{B_x}-aB_x)^2}\,dx = l
+\\\\
+-\frac{1}{4}B_x\sqrt{(-aB_x+2ax+\frac{B_y}{B_x})^2+1}+\frac{1}{2}x\sqrt{(-aB_x+2ax+\frac{B_y}{B_x})^2+1}+
+\frac{B_y\sqrt{(-aB_x+2ax+\frac{B_y}{B_x})^2+1}}{4aB_x}-\\
+\frac{\ln\left(1-\frac{-aB_x+2ax+\frac{B_y}{B_x}}{\sqrt{(-aB_x+2ax+\frac{B_y}{B_x})^2+1}}\right)}{8a}+\frac{\ln\left(1+\frac{-aB_x+2ax+\frac{B_y}{B_x}}{\sqrt{(-aB_x+2ax+\frac{B_y}{B_x})^2+1}}\right)}{8a}\biggr\rvert_{x=0}^{x=B_x} = l
+$\\\\
+Let us make this equation more readable by defining some constants:
+\begin{itemize}
+\item $m = \frac{B_y}{B_x}$
+\item $q = -aB_x+2ax+m$
+\item $v = \sqrt{q^2+1}$
+\item $q_2 = aB_x+ m$
+\item $v_2 = \sqrt{q_2^2+1}$
+\item $q_0 = -aB_x+m$
+\item $v_0 = \sqrt{q_0^2+1}$ 
+\end{itemize}
+$
+-\frac{1}{4}B_xv+\frac{1}{2}xv+\frac{mv}{4a} + \frac{\ln(1+\frac{q}{v})-\ln(1-\frac{q}{v})}{8a}\biggr\rvert_{x=0}^{x=B_x}=l\\\\
+-\frac{1}{4}B_xv_2+\frac{1}{2}B_xv_2+\frac{mv_2}{4a}+\frac{\ln(1+\frac{q_2}{v_2})-\ln(1-\frac{q_2}{v_2})}{8a}-\frac{1}{4}B_xv_0+\frac{mv_0}{4a}+\frac{\ln(1+\frac{q_0}{v_0})-\ln(1-\frac{q_0}{v_0})}{8a}\\\indent =l\\\\
+\frac{1}{4}B_xv_2+-\frac{1}4{B_xv_0+}\frac{mv_2}{2a}+\frac{\ln(1+\frac{q_2}{v_2})-\ln(1-\frac{q_2}{v_2})+\ln(1+\frac{q_0}{v_0})-	\ln(1-\frac{q_0}{v_0})}{8a} = l
+$\\\\
+This is a trancendental equation that must be evaluated numerically. Once we have a value for $a$, we may construct the full parabola. 
+To solve the full question, we must simply plug in our values for $B_x, B_y,$ and $l$, then solve for $a$ numerically. Finally, we can plug our midpoint in and get the position, from which it is trivial to calculate its angle.
+\end{document}
