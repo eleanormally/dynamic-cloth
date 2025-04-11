@@ -119,6 +119,11 @@ Cloth::Cloth(ArgParser* _args) {
   AdjustInterpolated();
   //TEST
   computeBoundingBox();
+  std::cout << particles[4][4].position << std::endl
+            << particles[8][4].position << std::endl
+            << calculateHangingMidpoint(particles[4][4], particles[8][4], 1.25)
+            << std::endl
+            << std::endl;
 }
 
 // ================================================================================

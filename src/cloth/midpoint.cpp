@@ -2,15 +2,15 @@
 #include "cloth.h"
 
 #define MAX_ITERS 100
-#define EPSILON 0.01
+#define EPSILON 0.00001
 double solve(std::function<double(double)> equation, double upperBound) {
   double lowerBound = 0;
   int    iters = 0;
   double midpoint = (upperBound + lowerBound) / 2;
   double value = equation(midpoint);
 
-  while (value > EPSILON && iters < MAX_ITERS) {
-    if (value < 0) {
+  while (abs(value) > EPSILON && iters < MAX_ITERS) {
+    if (value > 0) {
       upperBound = midpoint;
     } else {
       lowerBound = midpoint;
@@ -33,14 +33,21 @@ Vec3f calculateHangingMidpoint(const ClothParticle& p1, const ClothParticle& p2,
                   .Length();
   double By = p2.position.z() - p1.position.z();
 
-  double c = (By / Bx) + 1;
+  double m = By / Bx;
 
   using std::pow;
-  auto equation = [c, Bx, length](double a) {
-    return pow(c + a * Bx, 1.5) - pow(c - a * Bx, 1.5) - 3 * a * length;
+  auto antiderivative = [m, Bx](double a, double x) {
+    double q = -1 * a * Bx + 2 * a * x + m;
+    double v = sqrt(q * q + 1);
+    double qv = q / v;
+    return -0.25 * Bx * v + 0.5 * x * v + m * v / (4 * a) +
+           (log(1 + qv) - log(1 - qv)) / (8 * a);
+  };
+  auto equation = [&antiderivative, Bx, length](double a) {
+    return antiderivative(a, Bx) - antiderivative(a, 0) - length;
   };
 
-  double a = solve(equation, 10.0);
+  double a = solve(equation, 20.0);
 
   double midpointX = Bx / 2;
   double midpointHeight =
