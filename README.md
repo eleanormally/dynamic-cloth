@@ -27,6 +27,9 @@ k_bend [double, defines spring constance for bend springs]
 damping [double, defines damping force to apply (simulates friction)]
 
 correction [double, see Provot et. al. for Provot cloth correction]
+subdivision angle [double, angle between vertices to subdivide]
+hanging_coefficient [double, multiplied by spring force to get length of hanging]
+maxiumum_subdivision [int, maximum depth of subdivisions in simulation]
 
 m [int, number of masses in x direction] [int, number of masses in y direction]
 
@@ -36,6 +39,7 @@ p [double, x] [double, y] [double, z]
 fabric_weight [double, defines mass per node in simulation, distributed over nodes and area]
 
 timestep [double, timestep to iterate over]
+subdivision_rate [int, number of timesteps between subdivisions]
 
 [arbitrary number of fixed points specific as the following form]
 [each fixed point marks an existing point in the grid as fixed]
