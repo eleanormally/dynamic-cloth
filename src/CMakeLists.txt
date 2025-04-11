@@ -111,6 +111,7 @@ set (SRCS
   ${PROJECT_SOURCE_DIR}/cloth/cloth_simulate.cpp
   ${PROJECT_SOURCE_DIR}/cloth/cloth_subdivide.cpp
   ${PROJECT_SOURCE_DIR}/cloth/cloth_render.cpp
+  ${PROJECT_SOURCE_DIR}/cloth/midpoint.cpp
   ${PROJECT_SOURCE_DIR}/libs/utils.cpp
   ${PROJECT_SOURCE_DIR}/render/meshdata.cpp
   ${OS_SPECIFIC_FILES}

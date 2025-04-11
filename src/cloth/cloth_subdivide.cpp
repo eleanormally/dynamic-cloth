@@ -11,26 +11,16 @@ void Cloth::IncreaseClothDensity() {
   nx = (nx * 2) - 1;
   ny = (ny * 2) - 1;
   particles = std::move(newParticles);
-  std::unordered_map<PosPair, double> newSprings;
-  for (const std::pair<PosPair, double> oldSpring : springs) {
-    newSprings[oldSpring.first * 2] = oldSpring.second;
-  }
-  springs = std::move(newSprings);
 }
 
 void Cloth::AddSubdividedParticles(int i, int j, int distance) {
   ClothParticle& p = particles[i][j];
 
-  using std::pair;
-  static const vector<pair<int, int>> offsets = {
-      {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
-  };
-
-  for (const pair<int, int> offset : offsets) {
+  for (const Offset::Offset offset : Offset::Surrounding) {
     const int xIdx = i + (distance * offset.first);
     const int yIdx = j + (distance * offset.second);
 
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
 
@@ -55,19 +45,16 @@ void Cloth::AddSubdividedParticles(int i, int j, int distance) {
   }
 }
 void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
-  using std::pair;
-
-  static const vector<pair<int, int>> interpOffsets = {
-      {1, 2}, {1, -2}, {2, 1}, {2, -1}, {-1, 2}, {-1, -2}, {-2, 1}, {-2, -1},
-  };
-  for (const pair<int, int> offset : interpOffsets) {
+  int interpLayer = getParticle(i, j).layer - 1;
+  for (const Offset::Offset offset : Offset::Interp) {
     const int xIdx = i + (distance * offset.first);
     const int yIdx = j + (distance * offset.second);
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
 
     ClothParticle& newParticle = particles[xIdx][yIdx];
+    newParticle.layer = interpLayer;
     //interpolating between the adjacent active points we just created
     if (newParticle.type == Particle::None) {
       if (abs(offset.first) == 1) {
@@ -87,68 +74,17 @@ void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
   }
 }
 
-void Cloth::RegenerateSprings(int i, int j, int distance) {
-  using std::pair;
-  static const vector<pair<int, int>> structuralOffsets = {
-      {0, 1},
-      {0, -1},
-      {1, 0},
-      {-1, 0},
-  };
-  static const vector<pair<int, int>> shearOffsets = {
-      {1, 1},
-      {1, -1},
-      {-1, 1},
-      {-1, -1},
-  };
-  Pos origin(i, j);
-  int layer = particles[i][j].layer;
-  int springMultiplier = 1 << layer;
-  for (const pair<int, int> offset : structuralOffsets) {
-    Pos structuralPoint = origin;
-    structuralPoint.x += offset.first * distance;
-    structuralPoint.y += offset.second * distance;
-    if (structuralPoint.x >= 0 && structuralPoint.x < nx &&
-        structuralPoint.y >= 0 && structuralPoint.y < ny) {
-      springs[PosPair(origin, structuralPoint, layer)] =
-          k_structural * springMultiplier;
-    }
-
-    Pos bendPoint = origin;
-    bendPoint.x += offset.first * distance * 2;
-    bendPoint.y += offset.second * distance * 2;
-    if (bendPoint.x >= 0 && bendPoint.x < nx && bendPoint.y >= 0 &&
-        bendPoint.y < ny) {
-      springs[PosPair(origin, bendPoint, layer)] = k_bend * springMultiplier;
-    }
-  }
-  for (const pair<int, int> offset : shearOffsets) {
-    Pos shearPoint = origin;
-    shearPoint.x += offset.first * distance;
-    shearPoint.y += offset.second * distance;
-    if (shearPoint.x >= 0 && shearPoint.x < nx && shearPoint.y >= 0 &&
-        shearPoint.y < ny) {
-      springs[PosPair(origin, shearPoint, layer)] = k_shear * springMultiplier;
-    }
-  }
-}
-
 void Cloth::SubdivideAboutPoint(int i, int j) {
   ClothParticle& p = particles[i][j];
   assert(p.layer < maximumSubdivision);
   assert(p.type == Particle::Active || p.type == Particle::Fixed);
 
-  using std::pair;
-  static const vector<pair<int, int>> offsets = {
-      {0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1},
-  };
-
-  const int distance = 1 << (maximumSubdivision - p.layer - 1);
+  const int distance = scale(p.layer + 1);
   //add previous layers up to current layer
-  for (const pair<int, int> offset : offsets) {
+  for (const Offset::Offset offset : Offset::Surrounding) {
     const int xIdx = i + (2 * distance * offset.first);
     const int yIdx = j + (2 * distance * offset.second);
-    if (xIdx < 0 || xIdx >= nx || yIdx < 0 || yIdx >= ny) {
+    if (!inBounds(xIdx, yIdx)) {
       continue;
     }
     if (particles[xIdx][yIdx].type == Particle::None) {
@@ -161,5 +97,4 @@ void Cloth::SubdivideAboutPoint(int i, int j) {
   p.layer++;
   AddSubdividedParticles(i, j, distance);
   AddInterpolatedParticles(i, j, distance);
-  RegenerateSprings(i, j, distance);
 }

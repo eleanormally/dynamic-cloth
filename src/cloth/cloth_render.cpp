@@ -301,7 +301,7 @@ void Cloth::DebugPrintCloth() const {
           std::cout << "  ";
           break;
         case Particle::Interp:
-          std::cout << "I ";
+          std::cout << "I" << particles[i][j].layer;
           break;
       }
       std::cout << " ";
