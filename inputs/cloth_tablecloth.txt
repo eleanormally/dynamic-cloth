@@ -4,7 +4,7 @@ k_bend 1
 damping 0.05
 
 correction 0.1
-subdivision_angle 0.8
+subdivision_angle 0.9
 hanging_coefficient 0.5
 maximum_subdivision 1
 

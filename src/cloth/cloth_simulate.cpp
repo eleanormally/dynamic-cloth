@@ -242,7 +242,9 @@ void Cloth::Subdivide() {
   bool increaseDensity = false;
   for (int i = 0; i < nx; i++) {
     for (int j = 0; j < ny; j++) {
-      if (getParticle(i, j).layer == maximumSubdivision && subdivisions[i][j]) {
+      const ClothParticle& p = getParticle(i, j);
+      if (p.layer < subdivision_limit && p.layer == maximumSubdivision &&
+          subdivisions[i][j]) {
         increaseDensity = true;
       }
     }
@@ -250,6 +252,7 @@ void Cloth::Subdivide() {
   if (increaseDensity) {
     IncreaseClothDensity();
   }
+  bool didSubdivide = false;
   //using subdivisions.size() since we may have increased nx/ny above
   for (int i = 0; i < (int)subdivisions.size(); i++) {
     for (int j = 0; j < (int)subdivisions[0].size(); j++) {
@@ -257,7 +260,10 @@ void Cloth::Subdivide() {
         int x = increaseDensity ? i * 2 : i;
         int y = increaseDensity ? j * 2 : j;
         SubdivideAboutPoint(x, y);
+        didSubdivide = true;
       }
     }
   }
+  if (didSubdivide)
+    DebugPrintCloth();
 }
