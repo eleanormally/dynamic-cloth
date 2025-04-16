@@ -210,22 +210,37 @@ vector<vector<bool>> Cloth::getShouldSubdivide(float threshold) {
       if (p.type != Particle::Active) {
         continue;
       }
+      int   distance = scale(p.layer);
+      int   kFactor = 1 << p.layer;
+      float k = hanging_coefficient * kFactor;
       for (const Offset::Offset offset : Offset::Cardinal) {
-        int distance = scale(p.layer);
         int deltaI = distance * offset.first;
         int deltaJ = distance * offset.second;
-        if (!inBounds(i + deltaI, j + deltaJ) ||
-            !inBounds(i - deltaI, j - deltaJ)) {
-          continue;
-        }
 
-        const ClothParticle& l = getParticle(i - deltaI, j - deltaJ);
-        const ClothParticle& r = getParticle(i + deltaI, j + deltaJ);
-        if (l.type == Particle::None || r.type == Particle::None) {
-          continue;
-        }
+        float angle;
+        if (!inBounds(i + deltaI, j + deltaJ)) {
+          const ClothParticle& l = getParticle(i - deltaI, j - deltaJ);
+          if (l.type == Particle::None) {
+            continue;
+          }
+          Vec3f mid = calculateHangingMidpoint(l, p, k);
+          angle = getAngle(l.position, mid, p.position);
+        } else if (!inBounds(i - deltaI, j - deltaJ)) {
+          const ClothParticle& r = getParticle(i + deltaI, j + deltaJ);
+          if (r.type == Particle::None) {
+            continue;
+          }
+          Vec3f mid = calculateHangingMidpoint(p, r, k);
+          angle = getAngle(p.position, mid, r.position);
+        } else {
+          const ClothParticle& l = getParticle(i - deltaI, j - deltaJ);
+          const ClothParticle& r = getParticle(i + deltaI, j + deltaJ);
+          if (l.type == Particle::None || r.type == Particle::None) {
+            continue;
+          }
 
-        float angle = getAngle(l.position, p.position, r.position);
+          angle = getAngle(l.position, p.position, r.position);
+        }
         if (angle > threshold) {
           result[i][j] = true;
           break;
