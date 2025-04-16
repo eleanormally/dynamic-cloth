@@ -1,4 +1,4 @@
-k_structural 2
+k_structural 1
 k_shear 1
 k_bend 1
 damping 0.05
@@ -18,7 +18,7 @@ p 0 0 2
 fabric_weight 0.1
 
 timestep 0.001
-subdivision_rate 100
+subdivision_rate 1
 
 f 5 5     0.5 0.05 0.5
 f 5 15    0.5 0.05 1.5
