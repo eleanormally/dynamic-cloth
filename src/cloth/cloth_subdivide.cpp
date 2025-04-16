@@ -26,22 +26,16 @@ void Cloth::AddSubdividedParticles(int i, int j, int distance) {
 
     ClothParticle& newParticle = particles[xIdx][yIdx];
 
-    if (newParticle.type == Particle::Active ||
-        newParticle.type == Particle::Fixed) {
+    if (newParticle.type == Particle::Fixed) {
       continue;
     }
 
-    if (newParticle.type == Particle::Interp) {
-      newParticle.type = Particle::Active;
-      newParticle.layer = p.layer;
-    } else {
-      const int      interpXIdx = i + (distance * offset.first * 2);
-      const int      interpYIdx = j + (distance * offset.second * 2);
-      ClothParticle& interpParticle = particles[interpXIdx][interpYIdx];
-      assert(interpParticle.type != Particle::None);
-      newParticle = ClothParticle::interpActive(p, interpParticle);
-      newParticle.layer = p.layer;
-    }
+    const int      interpXIdx = i + (distance * offset.first * 2);
+    const int      interpYIdx = j + (distance * offset.second * 2);
+    ClothParticle& interpParticle = particles[interpXIdx][interpYIdx];
+    assert(interpParticle.type != Particle::None);
+    newParticle = ClothParticle::interpActive(p, interpParticle);
+    newParticle.layer = p.layer;
   }
 }
 void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
@@ -54,7 +48,10 @@ void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
     }
 
     ClothParticle& newParticle = particles[xIdx][yIdx];
-    newParticle.layer = interpLayer;
+    if (newParticle.type == Particle::Fixed ||
+        newParticle.type == Particle::Active) {
+      continue;
+    }
     //interpolating between the adjacent active points we just created
     if (newParticle.type == Particle::None) {
       if (abs(offset.first) == 1) {
@@ -71,17 +68,23 @@ void Cloth::AddInterpolatedParticles(int i, int j, int distance) {
         newParticle = ClothParticle::interp(interpA, interpB);
       }
     }
+    newParticle.layer = interpLayer;
   }
 }
 
 void Cloth::SubdivideAboutPoint(int i, int j) {
   ClothParticle& p = particles[i][j];
+  if (p.layer >= subdivision_limit) {
+    return;
+  }
   assert(p.layer < maximumSubdivision);
   assert(p.type == Particle::Active || p.type == Particle::Fixed);
 
   const int distance = scale(p.layer + 1);
+
   //add previous layers up to current layer
   for (const Offset::Offset offset : Offset::Surrounding) {
+    break;
     const int xIdx = i + (2 * distance * offset.first);
     const int yIdx = j + (2 * distance * offset.second);
     if (!inBounds(xIdx, yIdx)) {

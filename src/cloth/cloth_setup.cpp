@@ -31,6 +31,12 @@ Cloth::Cloth(ArgParser* _args) {
   //       correction factor == 100, means don't do ainitialY correction
   istr >> token >> correction;
   assert(token == "correction");
+  istr >> token >> subdivision_angle;
+  assert(token == "subdivision_angle");
+  istr >> token >> hanging_coefficient;
+  assert(token == "hanging_coefficient");
+  istr >> token >> subdivision_limit;
+  assert(token == "maximum_subdivision");
 
   // the cloth dimensions
   istr >> token >> initialX >> initialY;
@@ -95,6 +101,8 @@ Cloth::Cloth(ArgParser* _args) {
   istr >> token >> mesh_data->timestep;
   assert(token == "timestep");
   assert(mesh_data->timestep > 0.0);
+  istr >> token >> timestamps_per_subdivision;
+  assert(token == "subdivision_rate");
 
   // the fixed particles
   while (istr >> token) {
@@ -107,23 +115,24 @@ Cloth::Cloth(ArgParser* _args) {
     p.originalPosition = p.position;
     p.type = Particle::Fixed;
   }
-  SubdivideAboutPoint(8, 8);
-  IncreaseClothDensity();
-  SubdivideAboutPoint(16, 16);
-  SubdivideAboutPoint(0, 0);
-  SubdivideAboutPoint(24, 24);
-  SubdivideAboutPoint(24, 16);
-  SubdivideAboutPoint(20, 20);
-  SubdivideAboutPoint(20, 20);
+  /*IncreaseClothDensity();*/
+  /*SubdivideAboutPoint(4, 0);*/
+  /*SubdivideAboutPoint(4, 0);*/
+  /*SubdivideAboutPoint(0, 4);*/
+  /*SubdivideAboutPoint(0, 4);*/
+
+  /*SubdivideAboutPoint(8, 8);*/
+  /*IncreaseClothDensity();*/
+  /*SubdivideAboutPoint(16, 16);*/
+  /*SubdivideAboutPoint(0, 0);*/
+  /*SubdivideAboutPoint(24, 24);*/
+  /*SubdivideAboutPoint(24, 16);*/
+  /*SubdivideAboutPoint(20, 20);*/
+  /*SubdivideAboutPoint(20, 20);*/
 
   AdjustInterpolated();
   //TEST
   computeBoundingBox();
-  std::cout << particles[4][4].position << std::endl
-            << particles[8][4].position << std::endl
-            << calculateHangingMidpoint(particles[4][4], particles[8][4], 1.25)
-            << std::endl
-            << std::endl;
 }
 
 // ================================================================================

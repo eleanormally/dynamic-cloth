@@ -4,6 +4,9 @@ k_bend 1
 damping 0.05
 
 correction 0.1
+subdivision_angle 0.9
+hanging_coefficient 0.5
+maximum_subdivision 1
 
 m 21 21
 
@@ -15,6 +18,7 @@ p 0 0 2
 fabric_weight 0.1
 
 timestep 0.001
+subdivision_rate 100
 
 f 5 5     0.5 0.05 0.5
 f 5 15    0.5 0.05 1.5

@@ -31,4 +31,6 @@ const static Vec Surrounding = {
 const static Vec Interp = {
     {1, 2}, {1, -2}, {2, 1}, {2, -1}, {-1, 2}, {-1, -2}, {-2, 1}, {-2, -1},
 };
+
+const static Vec Cardinal = {{1, 0}, {0, 1}};
 }  // namespace Offset
