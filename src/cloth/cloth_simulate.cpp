@@ -252,7 +252,6 @@ void Cloth::Subdivide() {
   if (increaseDensity) {
     IncreaseClothDensity();
   }
-  bool didSubdivide = false;
   //using subdivisions.size() since we may have increased nx/ny above
   for (int i = 0; i < (int)subdivisions.size(); i++) {
     for (int j = 0; j < (int)subdivisions[0].size(); j++) {
@@ -260,10 +259,7 @@ void Cloth::Subdivide() {
         int x = increaseDensity ? i * 2 : i;
         int y = increaseDensity ? j * 2 : j;
         SubdivideAboutPoint(x, y);
-        didSubdivide = true;
       }
     }
   }
-  if (didSubdivide)
-    DebugPrintCloth();
 }

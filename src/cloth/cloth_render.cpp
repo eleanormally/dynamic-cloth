@@ -150,8 +150,12 @@ void Cloth::PackClothSurface(float*& current) {
       }
       int  diagonal = 1;
       bool shouldUse = true;
+      int  max = nx;
+      if (p.type == Particle::Interp) {
+        max = scale(p.layer + 1);
+      }
       while (true) {
-        if (i + diagonal >= nx || j + diagonal >= ny) {
+        if (i + diagonal >= nx || j + diagonal >= ny || diagonal > max) {
           shouldUse = false;
           break;
         }
