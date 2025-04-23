@@ -205,6 +205,7 @@ float getAngle(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3) {
 vector<vector<bool>> Cloth::getShouldSubdivide(float threshold) {
   vector<vector<bool>> result(nx, vector<bool>(ny, false));
   for (int i = 0; i < nx; i++) {
+#pragma omp parallel
     for (int j = 0; j < ny; j++) {
       const ClothParticle& p = getParticle(i, j);
       if (p.type != Particle::Active) {

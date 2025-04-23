@@ -1,0 +1,23 @@
+k_structural 2
+k_shear 1
+k_bend 1
+damping 0.05
+
+correction 0.1
+subdivision_angle 0.9
+hanging_coefficient 0.5
+maximum_subdivision 0
+
+m 40 40
+
+p 0 0 0
+p 2 0 0 
+p 2 0 2
+p 0 0 2
+
+fabric_weight 0.1
+
+timestep 0.001
+subdivision_rate 1000000
+
+f 20 20 1.0 0.05 1.0

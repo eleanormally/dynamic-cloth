@@ -57,7 +57,7 @@ extern MeshData *mesh_data;
     // initialize camera
     translation_x = 0;
     translation_y = 0;
-    zoom = 0.5;
+    zoom = 0.3;
     rotation_vertical = 0;
     rotation_horizontal = 0;
   }
